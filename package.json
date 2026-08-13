@@ -1,6 +1,6 @@
 {
   "name": "dsh-survey",
-  "description": "问卷式批量提问插件 for DeepSeek Harness：一次性问 10+ 题（单选/多选/是否 toggle/对比题/开放题），可跳过、全屏浮层、提交后对半 recap。Bundle 形态常驻 Web；skill 提供使用指南与动态插件兜底配方。",
+  "description": "问卷式提问与调查插件 for DeepSeek Harness：do_a_survey 工具一次问 1-10+ 题（单选/多选/是否 toggle/对比题/开放题），三档模式（compact/inline/overlay）、可跳过、全 Markdown 渲染、提交后对半 recap。Bundle 形态常驻 Web；skill 提供使用指南与动态插件兜底配方。",
   "version": "0.1.0",
   "type": "module",
   "license": "MIT",
