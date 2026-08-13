@@ -1,6 +1,6 @@
 ---
 name: dsh-survey
-description: Use this skill when the user wants to ask questions or run a survey through the do_a_survey tool — a questionnaire-style batch question tool for DeepSeek Harness that supports 10+ questions at once, single/multi/yes-no/compare/open question types, three presentation modes (compact / inline / fullscreen overlay), per-question skip, full Markdown rendering, and a readable two-column recap after submit. 当用户需要"问一个问题"、"批量提问"、"做问卷/调查"、"收集多个选择或确认"时使用；也用于指导模型主动调用 do_a_survey 而非普通提问。
+description: Use this skill when the user wants to ask questions or run a survey through the do_a_survey tool — a questionnaire-style batch question tool for DeepSeek Harness that supports 10+ questions at once, single/multi/yes-no/compare/open question types, four presentation modes (compact / inline / fullscreen overlay / grid matrix), per-question skip, full Markdown rendering, and a readable two-column recap after submit. 当用户需要"问一个问题"、"批量提问"、"做问卷/调查"、"收集多个选择或确认"、"大量简单问题矩阵"时使用；也用于指导模型主动调用 do_a_survey 而非普通提问。
 version: 2.0.0
 license: MIT
 ---
@@ -19,7 +19,7 @@ license: MIT
 
 ## 工具调用
 
-`do_a_survey(mode: "compact"|"inline"|"overlay", questions: [...])`
+`do_a_survey(mode: "compact"|"inline"|"overlay"|"grid", questions: [...])`
 
 **`mode` 必选**，按复杂度选择呈现形态：
 
@@ -28,6 +28,7 @@ license: MIT
 | `"compact"` | 只有 1 个问题 | 紧凑单题卡片（类似简单提问，但题型更丰富） |
 | `"inline"` | 多题、无对比题 | 内嵌在对话流固定画幅（748px） |
 | `"overlay"` | 含对比题、或需要更宽画布 | 全屏浮层（遮罩 + 1180px 卡片） |
+| `"grid"` | 大量简单问题（是否/单选为主） | 全屏网格矩阵，一个问题一张卡片 |
 
 **每题对象**：
 - `id`（必填）稳定 id，原样回显在答案中
