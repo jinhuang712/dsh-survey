@@ -191,21 +191,41 @@ return {
       // backslash escaping across JSON transport.
       const normalized = text.split('\\`').join('`')
       const out = []
+      const COLOR_RE = /\{color:([a-zA-Z]+|[#][0-9a-fA-F]{3,8}|rgb\([^)]*\))\}([\s\S]*?)\{\/color\}/g
       const re = /([*]{2}[^*]+[*]{2}|[`]{3}[^`]+[`]{3}|`[^`]+`)/g
       let last = 0
       let match
       let key = 0
-      while ((match = re.exec(normalized)) !== null) {
-        if (match.index > last) out.push(String(normalized.slice(last, match.index)))
-        const token = match[0]
-        if (token.startsWith('**')) {
-          out.push(React.createElement('strong', { key: String(key++) }, token.slice(2, -2)))
-        } else if (token.startsWith('```')) {
-          out.push(React.createElement('code', { key: String(key++) }, token.slice(3, -3).trim()))
-        } else {
-          out.push(React.createElement('code', { key: String(key++) }, token.slice(1, -1)))
+      // First split out {color:...} segments so color wins over inline tokens.
+      const segs = []
+      let cLast = 0
+      let cMatch
+      while ((cMatch = COLOR_RE.exec(normalized)) !== null) {
+        if (cMatch.index > cLast) segs.push({ text: normalized.slice(cLast, cMatch.index), color: null })
+        segs.push({ text: cMatch[2], color: cMatch[1] })
+        cLast = cMatch.index + cMatch[0].length
+      }
+      if (cLast < normalized.length) segs.push({ text: normalized.slice(cLast), color: null })
+      for (const seg of segs) {
+        if (seg.color !== null) {
+          out.push(React.createElement('span', { key: String(key++), style: { color: seg.color } }, renderInline(seg.text)))
+          continue
         }
-        last = match.index + token.length
+        let segLast = 0
+        let segMatch
+        while ((segMatch = re.exec(seg.text)) !== null) {
+          if (segMatch.index > segLast) out.push(String(seg.text.slice(segLast, segMatch.index)))
+          const token = segMatch[0]
+          if (token.startsWith('**')) {
+            out.push(React.createElement('strong', { key: String(key++) }, token.slice(2, -2)))
+          } else if (token.startsWith('```')) {
+            out.push(React.createElement('code', { key: String(key++) }, token.slice(3, -3).trim()))
+          } else {
+            out.push(React.createElement('code', { key: String(key++) }, token.slice(1, -1)))
+          }
+          segLast = segMatch.index + token.length
+        }
+        if (segLast < seg.text.length) out.push(String(seg.text.slice(segLast)))
       }
       if (last < normalized.length) out.push(String(normalized.slice(last)))
       return out

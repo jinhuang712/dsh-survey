@@ -13,7 +13,7 @@
 
 </div>
 
-模型调用 `do_a_survey` 后，Web UI 按 `mode` 呈现问卷：单题紧凑卡 / 多题内嵌画幅 / 对比题全屏浮层 / 大量简单问题的网格矩阵。所有文本支持 Markdown（代码块、引用、行内代码、加粗），提交后以对半两列 recap 展示回答。
+模型调用 `do_a_survey` 后，Web UI 按 `mode` 呈现问卷：单题紧凑卡 / 多题内嵌画幅 / 对比题全屏浮层 / 大量简单问题的网格矩阵。所有文本支持 Markdown（代码块、引用、行内代码、加粗）与颜色（`{color:red}文字{/color}`），提交后以对半两列 recap 展示回答。
 
 ## 安装
 
@@ -73,22 +73,24 @@ dsh plugin --profile web add .
 ### 特性
 
 - **Markdown 全渲染**：题目、选项 label/description、对比块、recap 均通过官方安全渲染器（micromark + 协议白名单 + shiki 高亮），支持代码块、引用、行内代码、加粗
+- **颜色**：`{color:red}文字{/color}`（支持颜色名 / `#hex` / `rgb()`），在题目、选项、对比块中均可使用
 - **跳过/恢复**：每题 ✕ 灰化跳过，↺ 恢复；提交为 `skipped: true`
 - **全屏浮层**：`mode: "overlay"` 全屏居中（遮罩 + 1180px），突破对话流 748px 列宽
+- **grid 矩阵**：`mode: "grid"` 大量简单问题全屏网格，卡片等高、toggle 贴底、逐卡跳过；对比题自动降级为左右二选一
 - **可读 recap**：严格对半两列，逐行"题目 → 答案"
 - **无障碍**：radio/checkbox 语义 + 键盘焦点环
 
 ## 架构
 
 - **Host half**（`lib/index.mjs`）：Cordis entry，`defineTool` 注册 `do_a_survey`；`webServer.register` 提供 `/api/dsh-survey/submit|cancel`；`execute` 挂起等待（`exec.callId` 关联，`exec.signal` 中止清理）
-- **Client half**（`lib/client.js`）：`__ModuleLoader__.load` bundle，注册 `tool.call.toolview` key=`do_a_survey`；三档模式（compact/inline/overlay）+ Markdown 渲染 + `fetch` 提交
+- **Client half**（`lib/client.js`）：`__ModuleLoader__.load` bundle，注册 `tool.call.toolview` key=`do_a_survey`；四档模式（compact/inline/overlay/grid）+ Markdown 与颜色渲染 + `fetch` 提交
 - **Skill**（`skills/dsh-survey/SKILL.md`）：用法指南 + 动态插件兜底配方（`references/dynamic-plugin-fallback.md`）
 
 ## 验证
 
 - 安装后 `__DSH_BOOT__` 应含 `dsh-survey` client 行；`/plugins/dsh-survey/client.js` 200
 - `cordis_inspect_query`（Tool.listTools）应看到 `do_a_survey`
-- 发一轮 4-6 题实测（含 markdown 文本），验证三种 mode 呈现
+- 发一轮 4-6 题实测（含 markdown + 颜色文本），验证四种 mode 呈现
 
 ## 卸载
 
