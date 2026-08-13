@@ -1,0 +1,4 @@
+# dsh-survey bundle：向组合挂载 dsh-survey（Host 工具 + webServer 路由 + Client 问卷 UI）
+- insert:
+    - id: dsh-survey
+      name: 'dsh-survey'
