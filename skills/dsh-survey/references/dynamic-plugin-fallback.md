@@ -227,7 +227,6 @@ return {
         }
         if (segLast < seg.text.length) out.push(String(seg.text.slice(segLast)))
       }
-      if (last < normalized.length) out.push(String(normalized.slice(last)))
       return out
     }
     const renderParagraph = (line, key) => {
