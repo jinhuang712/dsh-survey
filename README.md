@@ -1,6 +1,6 @@
 # dsh-survey
 
-Questionnaire-style questioning & survey plugin for [DeepSeek Harness](https://github.com/deepseek-ai/DeepSeek-Harness) — the `do_a_survey` tool asks 1 to 10+ questions in one go, rendered as a survey and submitted together.
+Questionnaire-style batch questioning plugin for [DeepSeek Harness](https://github.com/deepseek-ai/DeepSeek-Harness) — the `do_a_survey` tool asks 10+ questions in one go (single / multi / yes-no toggle / compare / open), each skippable, fullscreen overlay, with a two-column recap after submit.
 
 [![license](https://badgen.net/badge/license/MIT/green)](LICENSE)
 [![dsh-plugin](https://badgen.net/badge/topic/dsh-plugin/8257D0)](https://github.com/topics/dsh-plugin)
