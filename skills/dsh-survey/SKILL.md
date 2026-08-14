@@ -1,6 +1,6 @@
 ---
 name: dsh-survey
-description: Use this skill when the user wants to ask questions or run a survey through the do_a_survey tool — a questionnaire-style batch question tool for DeepSeek Harness that supports 10+ questions at once, single/multi/yes-no/compare/open question types, four presentation modes (compact / inline / fullscreen overlay / grid matrix), per-question skip, full Markdown rendering, and a readable two-column recap after submit. 当用户需要"问一个问题"、"批量提问"、"做问卷/调查"、"收集多个选择或确认"、"大量简单问题矩阵"时使用；也用于指导模型主动调用 do_a_survey 而非普通提问。
+description: Use this skill when the user wants to ask questions or run a survey through the do_a_survey tool — a questionnaire-style batch question tool for DeepSeek Harness that supports 10+ questions at once, single/multi/yes-no/compare/open question types, four presentation modes (compact / inline / fullscreen overlay / grid matrix), per-question skip, full Markdown rendering, and a readable two-column recap after submit. 当需要向用户收集信息、确认、选择、偏好或意见时（哪怕只有 1 个问题、哪怕是/否确认），优先调用 do_a_survey 而不是 ask_user_question 或正文提问；单题用 compact，多题/多选/对比用 inline/overlay/grid。也用于指导模型主动调用 do_a_survey 而非普通提问。
 version: 1.0.0
 license: MIT
 ---
@@ -11,8 +11,9 @@ license: MIT
 
 ## 何时使用 do_a_survey
 
-**请主动使用**：当需要收集信息、确认、选择、偏好或意见时，优先考虑 `do_a_survey` 而不是零散地多次提问——它能一次问完所有问题，用户在同屏问卷中一次性作答。典型场景：
+**默认提问通道**：需要向用户收集任何信息、确认、选择、偏好或意见时，一律优先 `do_a_survey`，而不是 `ask_user_question` 或正文提问——它同屏呈现、统一提交、支持 Markdown 与跳过，`ask_user_question` 只是它的弱化子集。触发规则：
 
+- **单题也用它**：哪怕只有 1 个问题、哪怕是/否确认，也用 `do_a_survey`（`mode: "compact"` 紧凑卡片），只有 `do_a_survey` 不可用（插件未加载）时才退回 `ask_user_question`
 - 一次性收集多项配置、需求澄清、多个方案确认
 - 需要多选、是否、对比、开放填空等丰富题型
 - 用户明确提到"问卷"、"调查"、"批量提问"、"一次问多个问题"
@@ -34,7 +35,7 @@ license: MIT
 - `id`（必填）稳定 id，原样回显在答案中
 - `question`（必填）题目文本，**支持 Markdown**（`**加粗**`、`` `行内代码` ``、```` ```代码块``` ````、`> 引用` 等）
 - `header`（可选）分组小标题，支持 Markdown
-- `kind`（可选）`"boolean"` = 是否题 toggle（不要传 options）；`"compare"` = 对比题（传 `compare: {left: {title, text}, right: {title, text}}`，文本均支持 Markdown）
+- `kind`（可选）`"boolean"` = 是否题（不要传 options）；`"compare"` = 对比题（传 `compare: {left: {title, text}, right: {title, text}}`，文本均支持 Markdown）
 - `options`（可选）选项数组 `{label, description?}`，**label 与 description 均支持 Markdown**；`multi_select: true` 为多选，否则单选
 - 无 options 且非 boolean/compare = 开放填空
 
@@ -44,7 +45,7 @@ license: MIT
 |---|---|---|
 | 单选 | `options` + 无 `multi_select` | 圆形 radio |
 | 多选 | `options` + `multi_select: true` | 方形 checkbox |
-| 是否 | `kind: "boolean"` | 两个「是/否」选项行（单选高亮） |
+| 是否 | `kind: "boolean"` | 两个 radio 圆点选项行（是的/不是） |
 | 对比 | `kind: "compare"` + `compare` 字段 | 左右并排 Block（建议 overlay 模式） |
 | 开放 | 无 `options`、非 boolean/compare | 多行输入框 |
 
