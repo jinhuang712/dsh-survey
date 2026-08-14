@@ -1,7 +1,7 @@
 ---
 name: dsh-survey
 description: Use this skill when the user wants to ask questions or run a survey through the do_a_survey tool — a questionnaire-style batch question tool for DeepSeek Harness that supports 10+ questions at once, single/multi/yes-no/compare/open question types, four presentation modes (compact / inline / fullscreen overlay / grid matrix), per-question skip, full Markdown rendering, and a readable two-column recap after submit. 当用户需要"问一个问题"、"批量提问"、"做问卷/调查"、"收集多个选择或确认"、"大量简单问题矩阵"时使用；也用于指导模型主动调用 do_a_survey 而非普通提问。
-version: 2.0.0
+version: 1.0.0
 license: MIT
 ---
 

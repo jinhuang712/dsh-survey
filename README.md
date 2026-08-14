@@ -1,101 +1,102 @@
 # dsh-survey
 
-问卷式提问与调查插件 for [DeepSeek Harness](https://github.com/deepseek-ai/DeepSeek-Harness) — 通过 `do_a_survey` 工具一次性问 1 到 10+ 个问题，问卷式同屏呈现，填完统一提交。
+Questionnaire-style questioning & survey plugin for [DeepSeek Harness](https://github.com/deepseek-ai/DeepSeek-Harness) — the `do_a_survey` tool asks 1 to 10+ questions in one go, rendered as a survey and submitted together.
 
 [![license](https://badgen.net/badge/license/MIT/green)](LICENSE)
 [![dsh-plugin](https://badgen.net/badge/topic/dsh-plugin/8257D0)](https://github.com/topics/dsh-plugin)
+[![中文](https://badgen.net/badge/lang/中文/blue)](README.zh.md)
 
 <div align="center">
 
-| 单选 | 多选 | 是否 toggle | 对比题 | 开放题 |
+| Single | Multi | Yes/No | Compare | Open |
 |---|---|---|---|---|
-| 圆形 radio | 方形 checkbox | 紧凑 is/否 开关 | 左右并排 Block | 多行输入框 |
+| Radio | Checkbox | Compact toggle | Side-by-side blocks | Multi-line input |
 
 </div>
 
-模型调用 `do_a_survey` 后，Web UI 按 `mode` 呈现问卷：单题紧凑卡 / 多题内嵌画幅 / 对比题全屏浮层 / 大量简单问题的网格矩阵。所有文本支持 Markdown（代码块、引用、行内代码、加粗）与颜色（`{color:red}文字{/color}`），提交后以对半两列 recap 展示回答。
+When the model calls `do_a_survey`, the Web UI renders the survey by `mode`: compact single-question card / inline embedded column / fullscreen overlay for compare / grid matrix for many simple questions. All text supports Markdown (code blocks, blockquotes, inline code, bold) and color (`{color:red}text{/color}`); a readable two-column recap is shown after submit.
 
-## 安装
+## Install
 
-**bundle 插件形态（推荐，常驻）**，构建产物已入库，一行安装：
+**Bundle plugin (recommended, resident)** — build artifacts are committed, one-line install:
 
 ```sh
 dsh plugin --profile web add "github:jinhuang712/dsh-survey#main"
-# 重启 dsh web，刷新页面
+# restart dsh web, then refresh the page
 ```
 
-本地目录安装（有源码时）：
+Local directory install (when you have the source):
 
 ```sh
 git clone https://github.com/jinhuang712/dsh-survey.git
 cd dsh-survey
 dsh plugin --profile web add .
-# 重启 dsh web，刷新页面
+# restart dsh web, then refresh the page
 ```
 
-装好后 `do_a_survey` 工具与问卷 UI 常驻可用。配套 skill `dsh-survey` 随安装注册（`dsh.skills` 声明），说明用法并在 bundle 不可用时提供动态插件兜底配方（`references/dynamic-plugin-fallback.md`）。
+After install, the `do_a_survey` tool and its survey UI are available permanently. The companion skill `dsh-survey` registers with the install (`dsh.skills` declaration): it documents usage and ships a dynamic-plugin fallback recipe (`references/dynamic-plugin-fallback.md`) for environments without the bundle.
 
-## 怎么用
+## Usage
 
-告诉模型你想收集什么，模型会调用 `do_a_survey(mode, questions)`。`mode` 必选：
+Tell the model what you want to collect; it calls `do_a_survey(mode, questions)`. `mode` is required:
 
-| mode | 适用 | 呈现 |
+| mode | When | Presentation |
 |---|---|---|
-| `"compact"` | 只有 1 个问题 | 紧凑单题卡片 |
-| `"inline"` | 多题、无对比题 | 内嵌对话流固定画幅 |
-| `"overlay"` | 含对比题、或需要更宽画布 | 全屏浮层（1180px） |
-| `"grid"` | 大量简单问题（是否/单选为主） | 全屏网格矩阵，一个问题一张卡片 |
+| `"compact"` | Exactly 1 question | Compact single-question card |
+| `"inline"` | Multiple questions, no compare | Embedded in the conversation column |
+| `"overlay"` | Compare questions or wide canvas | Fullscreen overlay (1180px) |
+| `"grid"` | Many simple questions (yes/no, single) | Fullscreen grid matrix, one card each |
 
-示例：
+Example:
 
 ```json
 {
   "mode": "inline",
   "questions": [
-    { "id": "q1", "question": "你用的**操作系统**？", "options": [{ "label": "macOS" }, { "label": "Linux" }] },
-    { "id": "q2", "question": "希望支持哪些题型？", "multi_select": true, "options": [{ "label": "单选" }, { "label": "对比" }] },
-    { "id": "q3", "kind": "boolean", "question": "需要自动保存进度吗？" },
-    { "id": "q4", "question": "其他建议：" }
+    { "id": "q1", "question": "Your **OS**?", "options": [{ "label": "macOS" }, { "label": "Linux" }] },
+    { "id": "q2", "question": "Which question types?", "multi_select": true, "options": [{ "label": "Single" }, { "label": "Compare" }] },
+    { "id": "q3", "kind": "boolean", "question": "Auto-save progress?" },
+    { "id": "q4", "question": "Other feedback:" }
   ]
 }
 ```
 
-### 题型
+### Question types
 
-| 题型 | 触发 | UI |
+| Type | Trigger | UI |
 |---|---|---|
-| 单选 | `options` + 无 `multi_select` | 圆形 radio |
-| 多选 | `options` + `multi_select: true` | 方形 checkbox |
-| 是否 | `kind: "boolean"` | 紧凑 toggle（不要传 options） |
-| 对比 | `kind: "compare"` + `compare: {left: {title,text}, right: {title,text}}` | 左右并排 Block（建议 overlay） |
-| 开放 | 无 `options`、非 boolean/compare | 多行输入框 |
+| Single | `options` + no `multi_select` | Radio |
+| Multi | `options` + `multi_select: true` | Checkbox |
+| Yes/No | `kind: "boolean"` | Compact toggle (omit `options`) |
+| Compare | `kind: "compare"` + `compare: {left: {title,text}, right: {title,text}}` | Side-by-side blocks (overlay recommended) |
+| Open | no `options`, not boolean/compare | Multi-line input |
 
-### 特性
+### Features
 
-- **Markdown 全渲染**：题目、选项 label/description、对比块、recap 均通过官方安全渲染器（micromark + 协议白名单 + shiki 高亮），支持代码块、引用、行内代码、加粗
-- **颜色**：`{color:red}文字{/color}`（支持颜色名 / `#hex` / `rgb()`），在题目、选项、对比块中均可使用
-- **跳过/恢复**：每题 ✕ 灰化跳过，↺ 恢复；提交为 `skipped: true`
-- **全屏浮层**：`mode: "overlay"` 全屏居中（遮罩 + 1180px），突破对话流 748px 列宽
-- **grid 矩阵**：`mode: "grid"` 大量简单问题全屏网格，卡片等高、toggle 贴底、逐卡跳过；对比题自动降级为左右二选一
-- **可读 recap**：严格对半两列，逐行"题目 → 答案"
-- **无障碍**：radio/checkbox 语义 + 键盘焦点环
+- **Full Markdown** — question text, option labels/descriptions, compare blocks, recap all render through the official safe renderer (micromark + protocol allowlist + shiki highlighting): code blocks, blockquotes, inline code, bold
+- **Color** — `{color:red}text{/color}` (named / `#hex` / `rgb()`), usable in questions, options, compare blocks
+- **Skip / restore** — per-question ✕ grays out, ↺ restores; submitted as `skipped: true`
+- **Fullscreen overlay** — `mode: "overlay"` centers fullscreen (mask + 1180px), breaking past the 748px conversation column
+- **Grid matrix** — `mode: "grid"` fullscreen grid of many simple questions: equal-height cards, bottom-aligned toggles, per-card skip; compare questions degrade to left/right choice
+- **Readable recap** — strict two-column grid, one "question → answer" row each
+- **Accessibility** — radio/checkbox semantics + keyboard focus rings
 
-## 架构
+## Architecture
 
-- **Host half**（`lib/index.mjs`）：Cordis entry，`defineTool` 注册 `do_a_survey`；`webServer.register` 提供 `/api/dsh-survey/submit|cancel`；`execute` 挂起等待（`exec.callId` 关联，`exec.signal` 中止清理）
-- **Client half**（`lib/client.js`）：`__ModuleLoader__.load` bundle，注册 `tool.call.toolview` key=`do_a_survey`；四档模式（compact/inline/overlay/grid）+ Markdown 与颜色渲染 + `fetch` 提交
-- **Skill**（`skills/dsh-survey/SKILL.md`）：用法指南 + 动态插件兜底配方（`references/dynamic-plugin-fallback.md`）
+- **Host half** (`lib/index.mjs`): Cordis entry — `defineTool` registers `do_a_survey`; `webServer.register` serves `/api/dsh-survey/submit|cancel`; `execute` suspends on the answer (`exec.callId` correlation, `exec.signal` abort cleanup)
+- **Client half** (`lib/client.js`): `__ModuleLoader__.load` bundle registering `tool.call.toolview` key=`do_a_survey`; four modes (compact/inline/overlay/grid) + Markdown & color rendering + `fetch` submit
+- **Skill** (`skills/dsh-survey/SKILL.md`): usage guide + dynamic-plugin fallback recipe (`references/dynamic-plugin-fallback.md`)
 
-## 验证
+## Verify
 
-- 安装后 `__DSH_BOOT__` 应含 `dsh-survey` client 行；`/plugins/dsh-survey/client.js` 200
-- `cordis_inspect_query`（Tool.listTools）应看到 `do_a_survey`
-- 发一轮 4-6 题实测（含 markdown + 颜色文本），验证四种 mode 呈现
+- After install, `__DSH_BOOT__` should include the `dsh-survey` client row; `/plugins/dsh-survey/client.js` returns 200
+- `cordis_inspect_query` (Tool.listTools) should show `do_a_survey`
+- Run a 4-6 question survey (with markdown + color text) and check all four modes
 
-## 卸载
+## Uninstall
 
-- 从 web profile 的 `cordis.patch.yml` 移除 `dsh-survey` insert 行
-- 从 web profile 的 `dsh.profile.bundles` 移除 `dsh-survey` 依赖并 `pnpm remove`
+- Remove the `dsh-survey` insert row from the web profile's `cordis.patch.yml`
+- Remove the `dsh-survey` dependency from the web profile's `dsh.profile.bundles` and run `pnpm remove`
 
 ## License
 
