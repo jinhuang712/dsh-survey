@@ -2,6 +2,11 @@
 
 All notable changes to **dsh-survey** are documented here.
 
+## [1.0.2] - 2026-08-15
+
+### Changed
+- **`do_a_survey` 提升为默认提问通道**：工具 description、SKILL.md（含 frontmatter）与动态插件兜底配方同步改写——任何需要向用户提问、确认、收集选择或意见的场景（哪怕只有 1 个问题、哪怕是/否确认）都优先使用 `do_a_survey`（单题用 `mode: "compact"`），而不是正文提问或 `ask_user_question`；`ask_user_question` 仅作为插件不可用时的兜底。
+
 ## [1.0.1] - 2026-08-15
 
 ### Changed
