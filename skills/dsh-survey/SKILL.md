@@ -44,7 +44,7 @@ license: MIT
 |---|---|---|
 | 单选 | `options` + 无 `multi_select` | 圆形 radio |
 | 多选 | `options` + `multi_select: true` | 方形 checkbox |
-| 是否 | `kind: "boolean"` | 紧凑 is/否 toggle |
+| 是否 | `kind: "boolean"` | 两个「是/否」选项行（单选高亮） |
 | 对比 | `kind: "compare"` + `compare` 字段 | 左右并排 Block（建议 overlay 模式） |
 | 开放 | 无 `options`、非 boolean/compare | 多行输入框 |
 

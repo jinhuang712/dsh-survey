@@ -5,7 +5,7 @@ All notable changes to **dsh-survey** are documented here.
 ## [1.0.1] - 2026-08-15
 
 ### Changed
-- **题型徽章移到右上角**：`单选/多选/是否/对比/开放` 标签不再跟在题目正文后面，改为显示在题号行右上角（跳过按钮旁），题目行更干净；compact 单题卡同样右上角显示。
+- **UI 全面对齐 ask_user_question（composer 卡片风格）**：卡片改用 `--dsw-specific-input-major` 背景 + 20px 圆角 + `--dsw-shadow-lv2`，header 用 eyebrow/title 排版 + 圆形图标关闭按钮；选项行改为 40px 高透明行（hover/选中 `--dsw-alias-interactive-bg-hover`），单选显示数字座、多选显示 14px checkbox；`(推荐)`/`（推荐）` 后缀解析为「推荐」badge；选项行自带「自定义回答」内联输入行，开放题用 textarea；提交按钮换成 primitives `Button`（fallback 用同款主题变量的 primary 按钮）。是否题由 toggle 改为两个「是/否」选项行。：`单选/多选/是否/对比/开放` 标签不再跟在题目正文后面，改为显示在题号行右上角（跳过按钮旁），题目行更干净；compact 单题卡同样右上角显示。
 
 ### Fixed
 - **题号与题目正文不在一行（复发）**：题号不再作为独立 flex span（长 MarkdownText 块会把题号挤到单独一行），而是作为 Markdown 段落首字渲染（`N. 题目…`），长题目换行时题号始终与正文首行同排；grid 模式同步修复。上一版 `.mq-qtext` flex-wrap 修复只覆盖了含 `{color:…}` 标记的题目，普通题目（裸 MarkdownText div）未命中。
