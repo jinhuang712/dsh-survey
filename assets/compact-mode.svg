@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="360" viewBox="0 0 900 360" font-family="system-ui, -apple-system, sans-serif">
+  <defs>
+    <linearGradient id="bg4" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0d1117"/>
+      <stop offset="1" stop-color="#10151d"/>
+    </linearGradient>
+  </defs>
+  <rect width="900" height="360" fill="url(#bg4)"/>
+
+  <!-- conversation around -->
+  <text x="60" y="64" font-size="13" fill="#8b93a5">模型：</text>
+  <rect x="120" y="44" width="420" height="36" rx="18" fill="#1c2330"/>
+  <text x="146" y="67" font-size="13" fill="#e6e8ec">确认一下，就一个问题</text>
+
+  <!-- compact single-question card -->
+  <rect x="180" y="110" width="540" height="180" rx="16" fill="#161b24" stroke="#242c3a" stroke-width="1"/>
+
+  <!-- question row (number + text + type pill on one line) -->
+  <text x="212" y="148" font-size="13" fill="#8b93a5" font-weight="700">1.</text>
+  <text x="228" y="148" font-size="15" fill="#e6e8ec" font-weight="600">确认按此方案执行？</text>
+  <rect x="420" y="134" width="48" height="20" rx="10" fill="#1f2530" stroke="#2c3444"/>
+  <text x="432" y="148" font-size="10" font-weight="600" fill="#8b93a5">是否</text>
+
+  <!-- yes/no toggle -->
+  <rect x="212" y="172" width="110" height="32" rx="16" fill="#4f7cff"/>
+  <text x="238" y="193" font-size="13" font-weight="600" fill="#ffffff">是</text>
+  <rect x="320" y="172" width="110" height="32" rx="16" fill="#1f2530" stroke="#2c3444"/>
+  <text x="346" y="193" font-size="13" font-weight="600" fill="#8b93a5">否</text>
+
+  <!-- footer: single submit -->
+  <rect x="520" y="238" width="120" height="36" rx="10" fill="#4f7cff"/>
+  <text x="545" y="261" font-size="13" font-weight="700" fill="#ffffff">提交回答</text>
+
+  <!-- caption: compact = single question, richer types -->
+  <text x="212" y="268" font-size="11" fill="#5a6478">compact · 单题紧凑卡片</text>
+</svg>

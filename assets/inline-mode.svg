@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="640" viewBox="0 0 900 640" font-family="system-ui, -apple-system, sans-serif">
+  <defs>
+    <linearGradient id="bg2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0d1117"/>
+      <stop offset="1" stop-color="#10151d"/>
+    </linearGradient>
+  </defs>
+  <rect width="900" height="640" fill="url(#bg2)"/>
+
+  <!-- conversation: user message bubble -->
+  <rect x="440" y="36" width="330" height="44" rx="22" fill="#2f3b56"/>
+  <text x="472" y="63" font-size="14" fill="#e6e8ec">做一份使用偏好的调查问卷</text>
+
+  <!-- inline survey card -->
+  <rect x="90" y="110" width="720" height="500" rx="16" fill="#161b24" stroke="#242c3a" stroke-width="1"/>
+
+  <!-- header -->
+  <text x="122" y="146" font-size="12" fill="#8b93a5" letter-spacing="2">问卷 · 共 3 题</text>
+  <text x="122" y="172" font-size="18" font-weight="700" fill="#e6e8ec">请回答以下问题，填完统一提交</text>
+  <rect x="778" y="132" width="22" height="22" rx="6" fill="none" stroke="#3a4356"/>
+  <text x="783" y="148" font-size="13" fill="#8b93a5">✕</text>
+
+  <!-- Q1: single choice with markdown bold -->
+  <g>
+    <rect x="122" y="198" width="656" height="92" rx="12" fill="#1a1f2a" stroke="#242c3a"/>
+    <text x="136" y="222" font-size="13" fill="#8b93a5" font-weight="700">1.</text>
+    <text x="152" y="222" font-size="14" fill="#e6e8ec" font-weight="600">你用的 <tspan font-weight="700" fill="#ffffff">操作系统</tspan>？</text>
+    <rect x="420" y="210" width="48" height="20" rx="10" fill="#1f2530" stroke="#2c3444"/>
+    <text x="432" y="224" font-size="10" font-weight="600" fill="#8b93a5">单选</text>
+    <rect x="136" y="238" width="200" height="36" rx="10" fill="#4f7cff"/>
+    <circle cx="150" cy="256" r="7" fill="#ffffff"/>
+    <text x="166" y="261" font-size="13" font-weight="600" fill="#ffffff">macOS</text>
+    <rect x="346" y="238" width="200" height="36" rx="10" fill="#1f2530" stroke="#2c3444"/>
+    <circle cx="360" cy="256" r="7" fill="none" stroke="#3a4356"/>
+    <text x="376" y="261" font-size="13" font-weight="600" fill="#8b93a5">Linux</text>
+    <rect x="556" y="238" width="200" height="36" rx="10" fill="#1f2530" stroke="#2c3444"/>
+    <circle cx="570" cy="256" r="7" fill="none" stroke="#3a4356"/>
+    <text x="586" y="261" font-size="13" font-weight="600" fill="#8b93a5">Windows</text>
+  </g>
+
+  <!-- Q2: multi select with color -->
+  <g>
+    <rect x="122" y="306" width="656" height="112" rx="12" fill="#1a1f2a" stroke="#242c3a"/>
+    <text x="136" y="330" font-size="13" fill="#8b93a5" font-weight="700">2.</text>
+    <text x="152" y="330" font-size="14" fill="#e6e8ec" font-weight="600">希望支持哪些 <tspan fill="#4fc3f7">高级</tspan> 题型？</text>
+    <rect x="420" y="318" width="48" height="20" rx="10" fill="#1f2530" stroke="#2c3444"/>
+    <text x="432" y="332" font-size="10" font-weight="600" fill="#8b93a5">多选</text>
+    <rect x="136" y="348" width="200" height="36" rx="10" fill="#4f7cff"/>
+    <rect x="144" y="356" width="20" height="20" rx="5" fill="#ffffff"/>
+    <path d="M148 366 l4 4 l8 -9" stroke="#4f7cff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="172" y="371" font-size="13" font-weight="600" fill="#ffffff">单选</text>
+    <rect x="346" y="348" width="200" height="36" rx="10" fill="#4f7cff"/>
+    <rect x="354" y="356" width="20" height="20" rx="5" fill="#ffffff"/>
+    <path d="M358 366 l4 4 l8 -9" stroke="#4f7cff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="382" y="371" font-size="13" font-weight="600" fill="#ffffff">多选</text>
+    <rect x="556" y="348" width="200" height="36" rx="10" fill="#1f2530" stroke="#2c3444"/>
+    <rect x="564" y="356" width="20" height="20" rx="5" fill="none" stroke="#3a4356"/>
+    <text x="592" y="371" font-size="13" font-weight="600" fill="#8b93a5">对比</text>
+  </g>
+
+  <!-- Q3: yes/no toggle -->
+  <g>
+    <rect x="122" y="434" width="656" height="76" rx="12" fill="#1a1f2a" stroke="#242c3a"/>
+    <text x="136" y="458" font-size="13" fill="#8b93a5" font-weight="700">3.</text>
+    <text x="152" y="458" font-size="14" fill="#e6e8ec" font-weight="600">需要自动保存进度？</text>
+    <rect x="420" y="446" width="48" height="20" rx="10" fill="#1f2530" stroke="#2c3444"/>
+    <text x="432" y="460" font-size="10" font-weight="600" fill="#8b93a5">是否</text>
+    <rect x="136" y="474" width="100" height="26" rx="13" fill="#4f7cff"/>
+    <text x="158" y="492" font-size="12" font-weight="600" fill="#ffffff">是</text>
+    <rect x="234" y="474" width="100" height="26" rx="13" fill="#1f2530" stroke="#2c3444"/>
+    <text x="256" y="492" font-size="12" font-weight="600" fill="#8b93a5">否</text>
+  </g>
+
+  <!-- footer -->
+  <text x="122" y="570" font-size="13" font-weight="500" fill="#8b93a5">已答 <tspan fill="#e6e8ec" font-weight="700">1</tspan> / 3 题</text>
+  <rect x="608" y="554" width="142" height="40" rx="10" fill="#4f7cff"/>
+  <text x="634" y="579" font-size="13" font-weight="700" fill="#ffffff">提交全部回答</text>
+</svg>

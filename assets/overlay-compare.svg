@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="560" viewBox="0 0 900 560" font-family="system-ui, -apple-system, sans-serif">
+  <defs>
+    <linearGradient id="bg3" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0d1117"/>
+      <stop offset="1" stop-color="#10151d"/>
+    </linearGradient>
+  </defs>
+  <rect width="900" height="560" fill="url(#bg3)"/>
+
+  <!-- dimmed conversation behind -->
+  <rect x="30" y="40" width="300" height="12" rx="6" fill="#1c2330" opacity="0.5"/>
+  <rect x="30" y="58" width="460" height="10" rx="5" fill="#161b24" opacity="0.4"/>
+  <rect x="550" y="480" width="300" height="12" rx="6" fill="#1c2330" opacity="0.5"/>
+
+  <!-- fullscreen overlay card (wide) -->
+  <rect x="60" y="80" width="780" height="420" rx="18" fill="#161b24" stroke="#242c3a" stroke-width="1"/>
+
+  <!-- header -->
+  <text x="94" y="118" font-size="12" fill="#8b93a5" letter-spacing="2">问卷 · 共 1 题 · 对比</text>
+  <text x="94" y="144" font-size="18" font-weight="700" fill="#e6e8ec">选择更符合你需求的方案</text>
+  <rect x="806" y="102" width="22" height="22" rx="6" fill="none" stroke="#3a4356"/>
+  <text x="811" y="118" font-size="13" fill="#8b93a5">✕</text>
+
+  <!-- left compare block (selected) -->
+  <g>
+    <rect x="94" y="170" width="360" height="230" rx="14" fill="#1c2432" stroke="#4f7cff" stroke-width="2"/>
+    <circle cx="116" cy="196" r="9" fill="#4f7cff"/>
+    <circle cx="116" cy="196" r="4" fill="#ffffff"/>
+    <text x="134" y="201" font-size="15" font-weight="700" fill="#e6e8ec">方案 A：动态插件</text>
+    <text x="116" y="238" font-size="13" fill="#8b93a5">优势：立即生效，无需重启</text>
+    <text x="116" y="262" font-size="13" fill="#8b93a5">缺点：<tspan fill="#ffb74d" font-weight="600">进程重启后消失</tspan>，适合快速实验</text>
+    <rect x="116" y="300" width="200" height="70" rx="10" fill="#141924" stroke="#242c3a"/>
+    <text x="130" y="326" font-size="12" fill="#5a6478" font-family="ui-monospace, monospace">npx dsh</text>
+    <text x="130" y="346" font-size="12" fill="#5a6478" font-family="ui-monospace, monospace">plugin add .</text>
+  </g>
+
+  <!-- right compare block -->
+  <g>
+    <rect x="470" y="170" width="356" height="230" rx="14" fill="#1a1f2a" stroke="#242c3a"/>
+    <circle cx="492" cy="196" r="9" fill="none" stroke="#3a4356"/>
+    <text x="510" y="201" font-size="15" font-weight="700" fill="#e6e8ec">方案 B：固化 Skill</text>
+    <text x="492" y="238" font-size="13" fill="#8b93a5">优势：代码持久保存，任何会话可加载重建</text>
+    <text x="492" y="262" font-size="13" fill="#8b93a5">升级不会覆盖，适合长期使用</text>
+    <rect x="492" y="300" width="200" height="70" rx="10" fill="#141924" stroke="#242c3a"/>
+    <text x="506" y="326" font-size="12" fill="#5a6478" font-family="ui-monospace, monospace">skills/</text>
+    <text x="506" y="346" font-size="12" fill="#5a6478" font-family="ui-monospace, monospace">dsh-survey/</text>
+  </g>
+
+  <!-- footer -->
+  <text x="94" y="450" font-size="13" font-weight="500" fill="#8b93a5">已答 <tspan fill="#e6e8ec" font-weight="700">1</tspan> / 1 题</text>
+  <rect x="688" y="432" width="142" height="40" rx="10" fill="#4f7cff"/>
+  <text x="714" y="457" font-size="13" font-weight="700" fill="#ffffff">提交全部回答</text>
+</svg>

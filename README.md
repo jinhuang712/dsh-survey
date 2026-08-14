@@ -16,6 +16,24 @@ Questionnaire-style questioning & survey plugin for [DeepSeek Harness](https://g
 
 When the model calls `do_a_survey`, the Web UI renders the survey by `mode`: compact single-question card / inline embedded column / fullscreen overlay for compare / grid matrix for many simple questions. All text supports Markdown (code blocks, blockquotes, inline code, bold) and color (`{color:red}text{/color}`); a readable two-column recap is shown after submit.
 
+## Preview
+
+**Grid matrix** — fullscreen overlay for many simple questions, one card each:
+
+<img src="assets/grid-mode.svg" alt="Grid matrix mode" width="720">
+
+**Inline** — survey embedded in the conversation column, filled and submitted together:
+
+<img src="assets/inline-mode.svg" alt="Inline mode" width="720">
+
+**Overlay compare** — fullscreen side-by-side comparison with Markdown & color:
+
+<img src="assets/overlay-compare.svg" alt="Overlay compare mode" width="720">
+
+**Compact** — single-question card with rich question types:
+
+<img src="assets/compact-mode.svg" alt="Compact mode" width="720">
+
 ## Install
 
 **Bundle plugin (recommended, resident)** — build artifacts are committed, one-line install:

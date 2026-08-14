@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="560" viewBox="0 0 900 560" font-family="system-ui, -apple-system, sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0d1117"/>
+      <stop offset="1" stop-color="#10151d"/>
+    </linearGradient>
+  </defs>
+  <rect width="900" height="560" fill="url(#bg)"/>
+
+  <!-- fullscreen overlay mask hint (conversation behind, dimmed) -->
+  <rect x="0" y="0" width="900" height="24" fill="#161b24" opacity="0.6"/>
+  <rect x="20" y="34" width="360" height="14" rx="7" fill="#1c2330"/>
+  <rect x="30" y="52" width="500" height="10" rx="5" fill="#161b24" opacity="0.5"/>
+  <rect x="30" y="66" width="420" height="10" rx="5" fill="#161b24" opacity="0.5"/>
+
+  <!-- survey card -->
+  <rect x="70" y="90" width="760" height="450" rx="18" fill="#161b24" stroke="#242c3a" stroke-width="1"/>
+  <rect x="70" y="90" width="760" height="450" rx="18" fill="#0f131a" opacity="0.0"/>
+
+  <!-- header -->
+  <text x="102" y="126" font-size="12" fill="#8b93a5" letter-spacing="2">问卷矩阵 · 共 6 题</text>
+  <text x="102" y="152" font-size="18" font-weight="700" fill="#e6e8ec">逐项快速作答，填完统一提交</text>
+  <rect x="798" y="112" width="22" height="22" rx="6" fill="none" stroke="#3a4356"/>
+  <text x="803" y="128" font-size="13" fill="#8b93a5">✕</text>
+
+  <!-- grid 3x2 -->
+  <!-- card 1 -->
+  <g>
+    <rect x="102" y="176" width="228" height="118" rx="12" fill="#1a1f2a" stroke="#242c3a"/>
+    <text x="116" y="200" font-size="13" font-weight="600" fill="#e6e8ec">1. 开启自动保存？</text>
+    <g>
+      <rect x="116" y="216" width="98" height="30" rx="15" fill="#1f2530" stroke="#2c3444"/>
+      <text x="140" y="236" font-size="12" font-weight="600" fill="#8b93a5">是</text>
+      <rect x="212" y="216" width="98" height="30" rx="15" fill="#4f7cff"/>
+      <text x="236" y="236" font-size="12" font-weight="600" fill="#ffffff">否</text>
+    </g>
+  </g>
+  <!-- card 2 -->
+  <g>
+    <rect x="344" y="176" width="228" height="118" rx="12" fill="#1a1f2a" stroke="#242c3a"/>
+    <text x="358" y="200" font-size="13" font-weight="600" fill="#e6e8ec">2. 使用深色模式？</text>
+    <g>
+      <rect x="358" y="216" width="98" height="30" rx="15" fill="#4f7cff"/>
+      <text x="382" y="236" font-size="12" font-weight="600" fill="#ffffff">是</text>
+      <rect x="454" y="216" width="98" height="30" rx="15" fill="#1f2530" stroke="#2c3444"/>
+      <text x="478" y="236" font-size="12" font-weight="600" fill="#8b93a5">否</text>
+    </g>
+  </g>
+  <!-- card 3 -->
+  <g>
+    <rect x="586" y="176" width="228" height="118" rx="12" fill="#1a1f2a" stroke="#242c3a"/>
+    <text x="600" y="200" font-size="13" font-weight="600" fill="#e6e8ec">3. 接收每日摘要？</text>
+    <g>
+      <rect x="600" y="216" width="98" height="30" rx="15" fill="#1f2530" stroke="#2c3444"/>
+      <text x="624" y="236" font-size="12" font-weight="600" fill="#8b93a5">是</text>
+      <rect x="696" y="216" width="98" height="30" rx="15" fill="#1f2530" stroke="#2c3444"/>
+      <text x="720" y="236" font-size="12" font-weight="600" fill="#8b93a5">否</text>
+    </g>
+  </g>
+  <!-- card 4 (single) -->
+  <g>
+    <rect x="102" y="308" width="228" height="118" rx="12" fill="#1a1f2a" stroke="#242c3a"/>
+    <text x="116" y="332" font-size="13" font-weight="600" fill="#e6e8ec">4. 首选平台</text>
+    <rect x="116" y="348" width="100" height="30" rx="8" fill="#4f7cff"/>
+    <circle cx="130" cy="363" r="6" fill="#ffffff"/>
+    <text x="144" y="368" font-size="12" font-weight="600" fill="#ffffff">macOS</text>
+    <rect x="224" y="348" width="90" height="30" rx="8" fill="#1f2530" stroke="#2c3444"/>
+    <circle cx="238" cy="363" r="6" fill="none" stroke="#3a4356"/>
+    <text x="252" y="368" font-size="12" font-weight="600" fill="#8b93a5">Windows</text>
+  </g>
+  <!-- card 5 (single) -->
+  <g>
+    <rect x="344" y="308" width="228" height="118" rx="12" fill="#1a1f2a" stroke="#242c3a"/>
+    <text x="358" y="332" font-size="13" font-weight="600" fill="#e6e8ec">5. 通知频率</text>
+    <rect x="358" y="348" width="98" height="30" rx="8" fill="#4f7cff"/>
+    <circle cx="372" cy="363" r="6" fill="#ffffff"/>
+    <text x="386" y="368" font-size="12" font-weight="600" fill="#ffffff">实时</text>
+    <rect x="464" y="348" width="90" height="30" rx="8" fill="#1f2530" stroke="#2c3444"/>
+    <circle cx="478" cy="363" r="6" fill="none" stroke="#3a4356"/>
+    <text x="492" y="368" font-size="12" font-weight="600" fill="#8b93a5">每日</text>
+  </g>
+  <!-- card 6 (open) -->
+  <g>
+    <rect x="586" y="308" width="228" height="118" rx="12" fill="#1a1f2a" stroke="#242c3a"/>
+    <text x="600" y="332" font-size="13" font-weight="600" fill="#e6e8ec">6. 其他建议</text>
+    <rect x="600" y="348" width="200" height="52" rx="8" fill="#141924" stroke="#242c3a"/>
+    <text x="614" y="374" font-size="12" fill="#5a6478">请输入…</text>
+  </g>
+
+  <!-- footer -->
+  <text x="102" y="476" font-size="13" font-weight="500" fill="#8b93a5">已答 <tspan fill="#e6e8ec" font-weight="700">3</tspan> / 6 题</text>
+  <rect x="660" y="458" width="142" height="40" rx="10" fill="#4f7cff"/>
+  <text x="686" y="483" font-size="13" font-weight="700" fill="#ffffff">提交全部回答</text>
+</svg>
