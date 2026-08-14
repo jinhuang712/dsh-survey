@@ -4,6 +4,9 @@ All notable changes to **dsh-survey** are documented here.
 
 ## [1.0.1] - 2026-08-15
 
+### Changed
+- **题型徽章移到右上角**：`单选/多选/是否/对比/开放` 标签不再跟在题目正文后面，改为显示在题号行右上角（跳过按钮旁），题目行更干净；compact 单题卡同样右上角显示。
+
 ### Fixed
 - **题号与题目正文不在一行（复发）**：题号不再作为独立 flex span（长 MarkdownText 块会把题号挤到单独一行），而是作为 Markdown 段落首字渲染（`N. 题目…`），长题目换行时题号始终与正文首行同排；grid 模式同步修复。上一版 `.mq-qtext` flex-wrap 修复只覆盖了含 `{color:…}` 标记的题目，普通题目（裸 MarkdownText div）未命中。
 - **`**加粗**` 紧贴引号/标点渲染成字面星号**（如 `**"家庭信任第一次松动"**`）：micromark 的 CommonMark flanking 规则会把贴着标点的分隔符判为非 flanking，星号原样显示。渲染器现在会在恰好两个 `*` 的分隔符与相邻标点之间插入零宽空格（`padEmphasisPunct`），题目、选项、描述、header、对比块、recap 全部生效。
