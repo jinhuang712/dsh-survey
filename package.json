@@ -22,7 +22,7 @@
   ],
   "scripts": {
     "build": "node build.mjs",
-    "prepack": "node build.mjs"
+    "prepublishOnly": "node build.mjs"
   },
   "exports": {
     ".": {
