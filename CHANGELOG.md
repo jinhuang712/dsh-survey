@@ -24,7 +24,36 @@ All notable changes to **dsh-survey** are documented here.
   - 优先读 Web UI 自己的语言服务（`ctx.locale`），没有该服务时按浏览器语言兜底，用户切语言即时重渲染
   - 答案契约不变：boolean 回传 `"yes"` / `"no"`，compare 回传 `"left"` / `"right"`，选项题回传 label 原文
 - **boolean 题回传值改为 `"yes"` / `"no"`**（原先是中文 `"是的"` / `"不是"`）：答案契约与界面语言解耦，UI 显示「是的 / 不是」或「Yes / No」，recap 照原样回显。工具 description 与 output schema 写明了各题型的回传形状。
-- **README 预览图重画**：四张 SVG 按真实 UI 的设计 token（`--dsw-*` 解析值）与 `.mq-*` 盒模型重绘，随读者的 GitHub 主题明暗切换，示例内容改为英文。
+- **grid 卡片按 harness 组件风格重做**：此前卡片背景取 `--dsw-alias-bg-layer-1`，在深色下比卡片本体更暗，看着像卡片上挖的洞。
+  - 改用其余 dsh 组件承载嵌套面的写法：`--dsw-alias-interactive-bg-hover` 打底 + `--dsw-alias-border-l2-darkmode-thin` 描边
+  - 排版换成 `--dsw-font-*` 复合字体 token；选项行 32→36px、圆角 8→10px、标记 16→18px；是否开关补上轨道底色，字号 11→12px
+  - 跳过按钮挪到卡片右上角绝对定位（对齐附件栏 `_remove_` 的位置），不再占据题干那一行的横向空间；保持常驻可见，并补上键盘焦点环
+  - 去掉控件的 `margin-top:auto`，是否开关不再悬在题干下方 90px 处；所有卡片仍保持同一尺寸
+  - 题号从 markdown 串里拆出来单独成元素，顺带修掉渲染成 `1\.` 的转义残留
+- **grid 卡片文案改为纯行内 markdown**：卡片小且全网格同尺寸，一道题里的代码块或硬换行会把整个矩阵一起撑高。
+  - 新增 `toInlineMarkdown()`：``` 围栏折成行内 code、引用去掉前缀、换行折成空格
+  - 题干、选项 label、compare 标题三处入口统一走它；加粗与行内 code 仍然渲染，文字仍在卡内自然换行
+- **客户端拆分为 src/ 模块，加 esbuild 构建**：原先 969 行连同 15KB 单行 CSS 字符串全挤在 `lib/client.js`。
+  - 按 runtime / css / i18n / markdown / controls / model / answers / modes 分文件，样式回归真正的 `.css`
+  - `pnpm build` 产出 `lib/client.js` + `client.js.map`；host 本来就服务这张 map，断点可直接落回 `src/`
+  - React 与 UI primitives 仍走 loader 的 `require`，不进包，插件与宿主共用同一个 React 实例
+  - 拆分前后五个场景的渲染 HTML 逐字节一致，样式表规范化空白后完全相同
+- **compare 块给足体量**：未选中的一侧此前是 `background:transparent`，只有选中那侧有面，两栏一边是卡片一边是裸文字，看不出这是两个待权衡的方案。
+  - 两侧统一给面：`--dsw-alias-interactive-bg-hover` 打底 + `--dsw-alias-border-l2-darkmode-thin` 描边，跟 grid 卡片同一套嵌套面写法
+  - `min-height` 40 → 148px，内边距 8/12 → 14/16，两栏间距 8 → 12px，正文 `flex:1` 撑满，两侧等高
+  - 选中态改为「浮起」：底色换成卡片色 + `--dsw-alias-label-primary` 描边，序号座同时反白，跟单选/多选的填充语义一致
+  - 标题与正文换 `--dsw-font-s-strong-14` / `--dsw-font-xs-13`，去掉 13.5px 这种非 token 字号
+- **recap 回显与卡片口径一致**：选项题的答案存的是作者原文 label，recap 直接回显会带上 `(recommended)` 标记和作者写的序号前缀，跟卡片上剥掉标记、另起徽章的显示对不上。`describeChoice` 现在按卡片同一套规则剥一遍再显示；回传给模型的 payload 仍是原文 label，不受影响。
+- **`{color:…}` 与块级 Markdown 混用会被撕开**：安全渲染器只接受整篇文档，连一个裸词都返回 `<div><p>词</p></div>`。`Md` 按颜色标记切开字符串后，每个分片各自成块——写在引用块里时，剩下的 `"> "` 单独渲染成一个空引用条，正文掉到外面。
+  - 无颜色标记的文本整篇交给渲染器，围栏、引用、列表的块结构原样保留
+  - 有颜色标记时分片包进 `.mq-md-inline` 拍回一行；分界处的空白改为在渲染器外输出，否则 Markdown 会把它 trim 掉，导致颜色两侧的词粘连
+- **报错文案比常态信息还小**：`.mq-error` 是 11px，紧挨着的 `.mq-progress` 是 14px——「你的操作没生效」反而比「已答 3 / 4 题」更不显眼。现在与进度文案同字号同字重。
+- **grid 跳过按钮点击区补到 24×24**：此前 20×20，低于最小可点区域，也跟其余模式的 `.mq-skip` / `.mq-close` 不一致。
+- **README 修正题型表**：单选此前写成 Radio，实际渲染是编号座（1 / 2 / 3）——`QuestionBody` 传的是 `index` 而非 `radio`，radio 点只出现在 boolean 题。
+- **README 预览图换成真实截图**：此前四张 SVG 是手绘近似，把单选画成了圆点（实际是编号座），主按钮画成蓝色（实际是近白胶囊）。
+  - 改为 Playwright 对真实工具视图截图：真组件 + 真样式表 + 浏览器排版，2 倍图
+  - 中英两套：`README.md` 用英文界面，`README.zh.md` 补上此前完全没有的预览章节，用中文界面
+  - 截图按卡片真实的 `max-height: min(78vh, 760px)` 取样例长度，不呈现产品里不可能出现的卡片尺寸
 - **全屏浮层补齐 modal 出口**：`overlay` 与 `grid` 支持 Esc 关闭、点遮罩关闭、Tab 在卡片内循环，打开时焦点移入卡片。
 - **动态插件兜底配方同步**：以上 host 与 client 修复全部同步；grid 模式补上此前缺失的 compare 题渲染，两版答案格式一致。
 
