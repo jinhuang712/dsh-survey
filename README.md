@@ -182,9 +182,22 @@ The host serves the map at `/plugins/dsh-survey/client.js.map`, so breakpoints l
 
 ## Verify
 
-- After install, `__DSH_BOOT__` should include the `dsh-survey` client row; `/plugins/dsh-survey/client.js` returns 200
-- `cordis_inspect_query` (Tool.listTools) should show `do_a_survey`
-- Run a 4-6 question survey (with markdown + color text) and check all four modes
+It loaded at all:
+
+- `__DSH_BOOT__` includes the `dsh-survey` client row, and
+  `/plugins/dsh-survey/client.js` returns 200
+- `cordis_inspect_query` (Tool.listTools) lists `do_a_survey`
+
+Then run a survey covering all four modes and check what the card does:
+
+| Look at | Expect |
+|---|---|
+| a single-choice question | numbered seats `1` `2`, not radio dots — dots appear only on yes/no |
+| `mode: "grid"` | every card the same size, skip `✕` in each corner, a fenced code block flattened to inline rather than inflating the card |
+| a compare question | both sides carry a panel; the chosen one lifts with a brighter border and an inverted number |
+| a `(recommended)` option | renders as a badge, and the marker is gone from the label — including in the recap after submit |
+| Markdown and `{color:…}` | bold, inline code and fenced blocks render; a coloured run stays on the same line as the text around it |
+| the interface language | follows the Web UI's language setting, and switching it re-renders the card immediately |
 
 ## Uninstall
 
