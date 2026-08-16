@@ -132,3 +132,14 @@
 .mq-question{padding:10px 18px 0}
 .mq-footer{align-items:flex-end;padding:0 10px}
 .mq-opt,.mq-custom-row{padding:8px 6px}}
+/* Sidebar-foot reminder while any survey waits for the user. Rendered in the
+   root-scoped sidebar.footer.action list, so it stays visible from every
+   session — the same amber "waiting" language the session list uses. */
+.mq-pending-dot{flex:none;width:8px;height:8px;border-radius:50%;background:var(--dsw-alias-state-warn-primary);box-shadow:0 0 0 3px color-mix(in srgb, var(--dsw-alias-state-warn-primary) 22%, transparent)}
+/* Composer hint while this session has a pending survey: a quiet amber line
+   that replaces the native question card seat (we take over the composer chain
+   for frames we fed). Clicking scrolls to the survey card in the flow. */
+.mq-pending-composer{display:flex;align-items:center;gap:8px;width:100%;padding:8px 14px;border:none;border-radius:12px;background:color-mix(in srgb, var(--dsw-alias-state-warn-primary) 12%, var(--dsw-alias-bg-layer-1));color:var(--dsw-alias-label-primary);cursor:pointer;text-align:left;font:var(--dsw-font-xs-13, 13px/20px inherit);font-family:inherit;transition:background-color 120ms ease}
+.mq-pending-composer:hover{background:color-mix(in srgb, var(--dsw-alias-state-warn-primary) 20%, var(--dsw-alias-bg-layer-1))}
+.mq-pending-composer:focus-visible{outline:2px solid color-mix(in srgb, var(--dsw-alias-brand-primary) 60%, transparent);outline-offset:2px}
+.mq-pending-composer-text{min-width:0;color:var(--dsw-alias-label-secondary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
