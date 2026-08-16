@@ -16,6 +16,18 @@ Ask the user ten questions at once instead of ten times in a row.
 
 </div>
 
+## When you'd want this
+
+- **The agent needs five decisions before it can start.** Without this it asks
+  one, waits, asks the next — five round trips before any work happens. Here it
+  asks once and you answer the lot in a single card.
+- **You want the answers back as data, not prose.** Each reply arrives as
+  `{ id, selected, custom?, skipped? }`, so the model never has to parse "yeah
+  the first one, and skip the last question" out of a sentence.
+- **Some of it you genuinely don't care about.** Every question has a skip, so
+  a survey that asks more than you want to answer costs you a click, not a
+  negotiation.
+
 When the model calls `do_a_survey`, the Web UI renders the survey by `mode`:
 
 - `compact` — single-question card
