@@ -44,21 +44,25 @@
 
 ## 安装
 
-**bundle 插件形态（推荐，常驻）**，构建产物已入库，一行安装：
+```sh
+dsh plugin --profile web add dsh-survey
+# 重启 dsh web，刷新页面
+```
+
+想跑未发布的提交，直接从仓库装：
 
 ```sh
 dsh plugin --profile web add "github:jinhuang712/dsh-survey#main"
-# 重启 dsh web，刷新页面
 ```
 
-本地目录安装（有源码时）：
+或者从本地 checkout 以 link 方式装，改了代码刷新页面即可生效：
 
 ```sh
 git clone https://github.com/jinhuang712/dsh-survey.git
-cd dsh-survey
-dsh plugin --profile web add .
-# 重启 dsh web，刷新页面
+dsh plugin --profile web add "link:$PWD/dsh-survey"
 ```
+
+如果你的 dsh profile 目录是 pnpm workspace，pnpm 会要求往 root 加依赖时带 `-w`，透传即可：`dsh plugin --profile web add -w …`。
 
 装好后 `do_a_survey` 工具与问卷 UI 常驻可用。配套 skill `dsh-survey` 随安装注册（`dsh.skills` 声明），说明用法并在 bundle 不可用时提供动态插件兜底配方（`references/dynamic-plugin-fallback.md`）。
 
