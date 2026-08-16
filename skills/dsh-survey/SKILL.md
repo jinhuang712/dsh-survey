@@ -26,13 +26,13 @@ license: MIT
 
 | mode | 适用 | 呈现 |
 |---|---|---|
-| `"compact"` | 只有 1 个问题 | 紧凑单题卡片（类似简单提问，但题型更丰富） |
+| `"compact"` | 只有 1 个问题 | 紧凑单题卡片；传多题会自动按 inline 呈现 |
 | `"inline"` | 多题、无对比题 | 内嵌在对话流固定画幅（748px） |
 | `"overlay"` | 含对比题、或需要更宽画布 | 全屏浮层（遮罩 + 1180px 卡片） |
 | `"grid"` | 大量简单问题（是否/单选为主） | 全屏网格矩阵，一个问题一张卡片 |
 
 **每题对象**：
-- `id`（必填）稳定 id，原样回显在答案中
+- `id`（必填）稳定 id，原样回显在答案中；同一份问卷内必须唯一，重复或缺失会让整次调用失败
 - `question`（必填）题目文本，**支持 Markdown**（`**加粗**`、`` `行内代码` ``、```` ```代码块``` ````、`> 引用` 等）
 - `header`（可选）分组小标题，支持 Markdown
 - `kind`（可选）`"boolean"` = 是否题（不要传 options）；`"compare"` = 对比题（传 `compare: {left: {title, text}, right: {title, text}}`，文本均支持 Markdown）
@@ -41,22 +41,29 @@ license: MIT
 
 ## 五类题型
 
-| 题型 | 触发 | UI |
-|---|---|---|
-| 单选 | `options` + 无 `multi_select` | 圆形 radio |
-| 多选 | `options` + `multi_select: true` | 方形 checkbox |
-| 是否 | `kind: "boolean"` | 两个 radio 圆点选项行（是的/不是） |
-| 对比 | `kind: "compare"` + `compare` 字段 | 左右并排 Block（建议 overlay 模式） |
-| 开放 | 无 `options`、非 boolean/compare | 多行输入框 |
+| 题型 | 触发 | UI | 答案回传 |
+|---|---|---|---|
+| 单选 | `options` + 无 `multi_select` | 圆形 radio | 选中选项的 label 原文 |
+| 多选 | `options` + `multi_select: true` | 方形 checkbox | 全部选中项的 label，按选项顺序 |
+| 是否 | `kind: "boolean"` | 两个 radio 圆点选项行（是的/不是） | `"yes"` 或 `"no"` |
+| 对比 | `kind: "compare"` + `compare` 字段 | 左右并排 Block（建议 overlay 模式） | `"left"` 或 `"right"` |
+| 开放 | 无 `options`、非 boolean/compare | 多行输入框 | 空 `selected`，正文在 `custom` |
+
+答案对象为 `{ id, selected, custom?, skipped? }`：`id` 原样回显，跳过的题为 `skipped: true`。选项题填了自定义回答时，单选丢弃选项只回 `custom`，多选两者并存。
 
 ## 交互特性
 
-- **Markdown 全渲染**：题目、选项、对比块、recap 均通过官方安全渲染器（micromark + 协议白名单 + shiki 高亮）渲染，支持代码块、引用、行内代码、加粗等；**加粗等强调符号紧贴引号/标点**（如 `**"重点"**`）会被自动插入零宽空格修复，避免 CommonMark 边界规则把星号原样显示（`**加粗**` 紧贴汉字本身不受影响）
+- **Markdown 全渲染**：题目、选项、对比块、recap 均走官方安全渲染器（micromark + 协议白名单 + shiki 高亮）
+  - 支持代码块、引用、行内代码、加粗
+  - 强调符号紧贴引号或标点（如 `**"重点"**`）会自动插零宽空格，避免 CommonMark 边界规则把星号原样显示
+  - `**加粗**` 紧贴汉字不受影响
 - **题号内联**：每题题号作为 Markdown 段落首字渲染（`1. 题目…`），长题目换行时题号始终与正文首行同排
 - **跳过/恢复**：每题右上角 ✕ 灰化跳过（显示"已跳过"），↺ 恢复；跳过的题提交为 `skipped: true`
 - **全屏浮层**：`mode: "overlay"` 时 `position: fixed` 全屏居中（遮罩 + 1180px 卡片），突破对话流 748px 列宽限制
 - **提交后 recap**：严格对半两列 grid，逐行"题目 → 答案"
+- **全屏浮层的退出**：`overlay` 与 `grid` 是 modal，Esc、点遮罩、右上角 ✕ 三条路都能关；Tab 在卡片内循环
 - **无障碍**：radio/checkbox 语义 + 键盘 `:focus-visible` 焦点环
+- **超时**：30 分钟内无人提交，调用以超时失败并释放挂起，不会把会话卡住
 
 ## 使用示例
 
