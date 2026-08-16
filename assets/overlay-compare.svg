@@ -1,53 +1,144 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="900" height="560" viewBox="0 0 900 560" font-family="system-ui, -apple-system, sans-serif">
-  <defs>
-    <linearGradient id="bg3" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#0d1117"/>
-      <stop offset="1" stop-color="#10151d"/>
-    </linearGradient>
-  </defs>
-  <rect width="900" height="560" fill="url(#bg3)"/>
-
-  <!-- dimmed conversation behind -->
-  <rect x="30" y="40" width="300" height="12" rx="6" fill="#1c2330" opacity="0.5"/>
-  <rect x="30" y="58" width="460" height="10" rx="5" fill="#161b24" opacity="0.4"/>
-  <rect x="550" y="480" width="300" height="12" rx="6" fill="#1c2330" opacity="0.5"/>
-
-  <!-- fullscreen overlay card (wide) -->
-  <rect x="60" y="80" width="780" height="420" rx="18" fill="#161b24" stroke="#242c3a" stroke-width="1"/>
-
-  <!-- header -->
-  <text x="94" y="118" font-size="12" fill="#8b93a5" letter-spacing="2">问卷 · 共 1 题 · 对比</text>
-  <text x="94" y="144" font-size="18" font-weight="700" fill="#e6e8ec">选择更符合你需求的方案</text>
-  <rect x="806" y="102" width="22" height="22" rx="6" fill="none" stroke="#3a4356"/>
-  <text x="811" y="118" font-size="13" fill="#8b93a5">✕</text>
-
-  <!-- left compare block (selected) -->
-  <g>
-    <rect x="94" y="170" width="360" height="230" rx="14" fill="#1c2432" stroke="#4f7cff" stroke-width="2"/>
-    <circle cx="116" cy="196" r="9" fill="#4f7cff"/>
-    <circle cx="116" cy="196" r="4" fill="#ffffff"/>
-    <text x="134" y="201" font-size="15" font-weight="700" fill="#e6e8ec">方案 A：动态插件</text>
-    <text x="116" y="238" font-size="13" fill="#8b93a5">优势：立即生效，无需重启</text>
-    <text x="116" y="262" font-size="13" fill="#8b93a5">缺点：<tspan fill="#ffb74d" font-weight="600">进程重启后消失</tspan>，适合快速实验</text>
-    <rect x="116" y="300" width="200" height="70" rx="10" fill="#141924" stroke="#242c3a"/>
-    <text x="130" y="326" font-size="12" fill="#5a6478" font-family="ui-monospace, monospace">npx dsh</text>
-    <text x="130" y="346" font-size="12" fill="#5a6478" font-family="ui-monospace, monospace">plugin add .</text>
-  </g>
-
-  <!-- right compare block -->
-  <g>
-    <rect x="470" y="170" width="356" height="230" rx="14" fill="#1a1f2a" stroke="#242c3a"/>
-    <circle cx="492" cy="196" r="9" fill="none" stroke="#3a4356"/>
-    <text x="510" y="201" font-size="15" font-weight="700" fill="#e6e8ec">方案 B：固化 Skill</text>
-    <text x="492" y="238" font-size="13" fill="#8b93a5">优势：代码持久保存，任何会话可加载重建</text>
-    <text x="492" y="262" font-size="13" fill="#8b93a5">升级不会覆盖，适合长期使用</text>
-    <rect x="492" y="300" width="200" height="70" rx="10" fill="#141924" stroke="#242c3a"/>
-    <text x="506" y="326" font-size="12" fill="#5a6478" font-family="ui-monospace, monospace">skills/</text>
-    <text x="506" y="346" font-size="12" fill="#5a6478" font-family="ui-monospace, monospace">dsh-survey/</text>
-  </g>
-
-  <!-- footer -->
-  <text x="94" y="450" font-size="13" font-weight="500" fill="#8b93a5">已答 <tspan fill="#e6e8ec" font-weight="700">1</tspan> / 1 题</text>
-  <rect x="688" y="432" width="142" height="40" rx="10" fill="#4f7cff"/>
-  <text x="714" y="457" font-size="13" font-weight="700" fill="#ffffff">提交全部回答</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="708" viewBox="0 0 1280 708" role="img" aria-label="Fullscreen overlay: a side-by-side compare question carrying a code block, a blockquote and coloured text, plus a follow-up choice.">
+<title>dsh-survey — overlay compare mode</title>
+<style>
+:root{
+  --base:#ffffff; --card:#ffffff; --cardline:#e6e6e6;
+  --l1:#f5f5f5; --l2:#e6e6e6; --l4:#d6d6d6;
+  --fg1:#0f1115; --fg2:#61666b; --fg3:#81858c; --fg4:#adb2b8;
+  --pillbg:#e4edfd; --pillfg:#4176e6;
+  --hover:#f2f3f4; --markbg:#e9ecf2;
+  --sel:#0f1115; --selfg:#ffffff;
+  --btn:#0f1115; --btnfg:#ffffff;
+  --field:#f5f6f7; --code:#ffffff;
+  --griditem:#ffffff; --gridline:#f5f5f5; --gridhover:#f2f3f4;
+  --scrim:#ffffff;
+}
+@media (prefers-color-scheme:dark){:root{
+  --base:#151517; --card:#2c2c2e; --cardline:#39393b;
+  --l1:#39393b; --l2:#454547; --l4:#565658;
+  --fg1:#f9fafb; --fg2:#cfd3d6; --fg3:#adb2b8; --fg4:#81858c;
+  --pillbg:#353638; --pillfg:#679efe;
+  --hover:#3d3d3f; --markbg:#61666b;
+  --sel:#f9fafb; --selfg:#0f1115;
+  --btn:#f9fafb; --btnfg:#0f1115;
+  --field:#353638; --code:#2c2c2e;
+  --griditem:#232324; --gridline:#303031; --gridhover:#353536;
+  --scrim:#151517;
+}}
+text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Helvetica Neue",Helvetica,Arial,sans-serif;
+  font-weight:400}
+.page{fill:var(--base)}
+.frame{fill:none;stroke:var(--l2);stroke-width:1}
+.card{fill:var(--card);stroke:var(--cardline);stroke-width:1}
+.rule{fill:var(--l1)}
+.item{fill:var(--griditem)}
+.itemline{fill:none;stroke:var(--gridline);stroke-width:1}
+.hoverbox{fill:var(--hover);stroke:var(--l2);stroke-width:1}
+.gridsel{fill:var(--gridhover);stroke:var(--l2);stroke-width:1}
+.markbg{fill:var(--markbg)}
+.field{fill:var(--field);stroke:var(--l2);stroke-width:1}
+.hairbox{fill:none;stroke:var(--l2);stroke-width:1}
+.codebg{fill:var(--code);stroke:var(--l1);stroke-width:1}
+.pill{fill:var(--pillbg)}
+.btn{fill:var(--btn)}
+.scrim{fill:var(--scrim);fill-opacity:.55}
+.ringoff{fill:none;stroke:var(--l4);stroke-width:1}
+.ringon{fill:var(--sel);stroke:none}
+.dot{fill:var(--selfg)}
+.check{fill:none;stroke:var(--selfg);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.icon{fill:none;stroke:var(--fg3);stroke-width:1.33;stroke-linecap:round}
+.iconm{fill:none;stroke:var(--fg2);stroke-width:1.1;stroke-linecap:round;stroke-linejoin:round}
+.quote{fill:var(--l2)}
+.eyebrow{font-size:11px;letter-spacing:.44px;fill:var(--fg3)}
+.title{font-size:16px;font-weight:500;fill:var(--fg1)}
+.qindex{font-size:13px;font-weight:700;letter-spacing:.26px;fill:var(--fg4)}
+.qhead{font-size:13px;font-weight:700;letter-spacing:.26px;fill:var(--fg2)}
+.qtext{font-size:14px;font-weight:500;letter-spacing:-.07px;fill:var(--fg1)}
+.opt{font-size:14px;font-weight:500;fill:var(--fg1)}
+.desc{font-size:14px;fill:var(--fg3)}
+.badge{font-size:11px;font-weight:600;fill:var(--pillfg)}
+.type{font-size:11px;font-weight:600;letter-spacing:.22px;fill:var(--pillfg)}
+.ph{font-size:14px;fill:var(--fg4)}
+.prog{font-size:14px;font-weight:500;fill:var(--fg2)}
+.progb{fill:var(--fg1)}
+.btnt{font-size:14px;fill:var(--btnfg)}
+.skip{font-size:14px;fill:var(--fg3)}
+.md{font-size:13px;fill:var(--fg3)}
+.mdq{font-size:13px;fill:var(--fg2)}
+.mono{font-size:12px;fill:var(--fg2);
+  font-family:"SF Mono","JetBrains Mono","Fira Code",Consolas,Menlo,monospace}
+.warn{fill:#e5534b}
+.gq{font-size:13px;font-weight:500;fill:var(--fg1)}
+.gopt{font-size:12px;font-weight:500;fill:var(--fg1)}
+.gside{font-size:11px;font-weight:600;fill:var(--fg2)}
+.gsideon{font-size:11px;font-weight:600;fill:var(--selfg)}
+.gskip{font-size:12px;fill:var(--fg3)}
+.cmp{font-size:14px;font-weight:500;fill:var(--fg1)}
+.num{font-size:11px;font-weight:500;fill:var(--fg2)}
+.chat{font-size:14px;fill:var(--fg2)}
+.chatu{font-size:14px;fill:var(--fg1)}
+</style>
+<rect x="0" y="0" width="1280" height="708" rx="14" class="page"/>
+<defs><clipPath id="cp"><rect x="0" y="0" width="1280" height="708" rx="14"/></clipPath><filter id="blur" x="-5%" y="-5%" width="110%" height="110%"><feGaussianBlur stdDeviation="2"/></filter></defs>
+<g clip-path="url(#cp)">
+<g filter="url(#blur)">
+<text x="266" y="46" class="chatu">Compare the two migration paths and let me pick one.</text>
+<text x="266" y="76" class="chat">Both are viable. Laying them out side by side.</text>
+<text x="266" y="100" class="chat">The write path is identical either way, so the whole</text>
+<text x="266" y="124" class="chat">difference — and the whole risk — sits in the read flip.</text>
+<rect x="266.5" y="644.5" width="747" height="51" rx="24" class="hairbox"/>
+<text x="286" y="675" class="ph">Reply to dsh…</text>
+</g>
+<rect x="0" y="0" width="1280" height="708" class="scrim"/>
+<rect x="50.5" y="72.5" width="1179" height="558" rx="20" class="card"/>
+<text x="74" y="103.3" class="eyebrow">SURVEY · 2 QUESTIONS</text>
+<text x="74" y="128.8" class="title">Answer these, then submit together</text>
+<path d="M1196.5 98.5L1207.5 109.5M1207.5 98.5L1196.5 109.5" class="icon"/>
+<text x="1194" y="163.97" class="skip" text-anchor="middle">✕</text>
+<rect x="1116.94" y="150" width="59.063" height="18" rx="6" class="pill"/>
+<text x="1120.94" y="162.3" class="type">Compare</text>
+<text x="74" y="159.9" class="qindex">1 ·</text>
+<text x="97.075" y="159.9" class="qhead">Approach</text>
+<rect x="169.965" y="155.5" width="936.972" height="1" class="rule"/>
+<text x="74" y="193.2" class="qtext">Which migration path should we take?</text>
+<rect x="74.5" y="213.5" width="561" height="127" rx="12" class="hoverbox"/>
+<rect x="86" y="224" width="18" height="18" rx="6" class="markbg"/>
+<text x="95" y="236.905" class="num" text-anchor="middle">1</text>
+<text x="112" y="237.2" class="cmp">Big-bang cutover</text>
+<text x="86" y="266.9" class="md">Rewrite every call site in one pull request.</text>
+<rect x="86.5" y="279.5" width="537" height="53" rx="8" class="codebg"/>
+<text x="97" y="300.6" class="mono">$ dsh migrate --all --commit</text>
+<text x="97" y="318.6" class="mono">  148 files changed, 1 revert point</text>
+<rect x="656" y="224" width="18" height="18" rx="6" class="markbg"/>
+<text x="665" y="236.905" class="num" text-anchor="middle">2</text>
+<text x="682" y="237.2" class="cmp">Dual-write, then flip</text>
+<text x="656" y="266.9" class="md">Write both stores, read the old one.</text>
+<rect x="656" y="279" width="3" height="44" class="quote"/>
+<text x="671" y="294.9" class="mdq"><tspan class="warn">Reversible</tspan> at any point — but the write</text>
+<text x="671" y="314.9" class="mdq">path stays duplicated until the flip.</text>
+<text x="1194" y="369.97" class="skip" text-anchor="middle">✕</text>
+<rect x="1132.7" y="356" width="43.303" height="18" rx="6" class="pill"/>
+<text x="1136.7" y="368.3" class="type">Single</text>
+<text x="74" y="365.9" class="qindex">2 ·</text>
+<text x="98.782" y="365.9" class="qhead">Timing</text>
+<rect x="152.471" y="361.5" width="970.226" height="1" class="rule"/>
+<text x="74" y="399.2" class="qtext">When do we cut over?</text>
+<rect x="74.5" y="419.5" width="1131" height="39" rx="12" class="hoverbox"/>
+<circle cx="92" cy="439" r="7" class="ringon"/>
+<circle cx="92" cy="439" r="3" class="dot"/>
+<text x="110" y="443.2" class="opt">Next release train</text>
+<rect x="231.974" y="430" width="89.44" height="18" rx="6" class="pill"/>
+<text x="235.974" y="442.3" class="badge">Recommended</text>
+<text x="327.414" y="443.2" class="desc">Lands with the 2.4 tag on Thursday.</text>
+<circle cx="92" cy="480" r="6.5" class="ringoff"/>
+<text x="110" y="484.2" class="opt">After the freeze</text>
+<text x="219.447" y="484.2" class="desc">Two weeks out, no release-day risk.</text>
+<rect x="82" y="511" width="20" height="20" rx="6" class="markbg"/>
+<path d="M87 526l0-2.6 6.8-6.8 2.6 2.6-6.8 6.8zM93.8 517.2l1.3-1.3 2.6 2.6-1.3 1.3" class="iconm"/>
+<text x="110" y="525.2" class="ph">Custom answer (optional)</text>
+<text x="68" y="593.2" class="prog">Answered <tspan class="progb">2</tspan> / 2</text>
+<rect x="1067.5" y="571" width="148.497" height="36" rx="18" class="btn"/>
+<text x="1141.75" y="593.97" class="btnt" text-anchor="middle">Submit all answers</text>
+</g>
+<rect x="0.5" y="0.5" width="1279" height="707" rx="13.5" class="frame"/>
 </svg>
