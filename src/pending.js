@@ -8,18 +8,15 @@
  * owning session — visible from every session, no UI seat of our own needed.
  * When the survey settles, a `question/resolved` frame clears the dot.
  *
- * The runtime also mints a PendingWait per requested frame, which the native
- * QuestionComposer would render in the composer. We take over that chain seat
- * for frames we fed (marked with `__dshSurvey`), so the composer shows a quiet
- * hint instead of a duplicate native question card; native ask_user_question
- * frames (no marker) still reach the shipped composer untouched. */
+ * The composer is never touched: the CURRENT session is skipped entirely (its
+ * survey card is already visible in the conversation flow, and feeding a frame
+ * there would mint a PendingWait the native QuestionComposer would render),
+ * and frames are only fed for OTHER sessions, whose waits stay invisible to
+ * the current composer. Opening a waiting session resolves its frame, so the
+ * dot clears exactly when the user arrives — the card is in front of them. */
 import { React } from "./runtime.js";
-import { useText } from "./i18n.js";
 
 const POLL_MS = 5000;
-/** Marker carried on the question payload we feed, so our composer selector
- *  recognises our own frames and never touches native ask_user_question. */
-const SURVEY_MARKER = "__dshSurvey";
 
 /** The client session runtime, captured in apply(); absent faces stay null. */
 let sessionsFace = null;
@@ -52,6 +49,18 @@ function frameIdOf(callId) {
 	return `dsh-survey:${callId}`;
 }
 
+/** The session currently open in the UI, when any. */
+function currentSessionId(sessions) {
+	try {
+		const list = sessions && sessions.list;
+		if (list === undefined || list === null || typeof list.getSnapshot !== "function") return undefined;
+		const snapshot = list.getSnapshot();
+		return snapshot && typeof snapshot.current === "string" ? snapshot.current : undefined;
+	} catch (error) {
+		return undefined;
+	}
+}
+
 /** Feed one `question/requested` frame so the sidebar lights the owning
  *  session row with the native pending-question dot. The question payload is a
  *  marker carrier only — the real survey renders from the tool call block. */
@@ -65,7 +74,7 @@ function feedRequested(sessions, survey) {
 			payload: {
 				type: "question/requested",
 				sessionId,
-				questions: [{ id: callId, question: "", [SURVEY_MARKER]: true }]
+				questions: [{ id: callId, question: "" }]
 			}
 		});
 	} catch (error) {
@@ -73,7 +82,8 @@ function feedRequested(sessions, survey) {
 	}
 }
 
-/** Feed the matching `question/resolved` frame so the native dot clears. */
+/** Feed the matching `question/resolved` frame so the native dot clears and
+ *  any PendingWait this bundle minted is settled (composer stays untouched). */
 function feedResolved(sessions, survey) {
 	const callId = survey.callId;
 	const sessionId = survey.sessionId;
@@ -93,30 +103,10 @@ function feedResolved(sessions, survey) {
 	}
 }
 
-/** The pending-list snapshot the composer hint reads (module-level store). */
-let snapshot = [];
-let listener = null;
-
-function publish(next) {
-	snapshot = next;
-	if (listener !== null) listener();
-}
-
-export function subscribe(fn) {
-	listener = fn;
-	return () => {
-		if (listener === fn) listener = null;
-	};
-}
-
-export function getSnapshot() {
-	return snapshot;
-}
-
 /** Start the poll-and-feed loop. Returns a disposer; call once from apply().
  *  Feeding is idempotent (same frame id + status is a no-op), so re-feeding
- *  the still-pending set every poll is safe; only surveys that LEFT the list
- *  receive the resolved frame. */
+ *  the still-pending set every poll is safe; only surveys that LEFT the list,
+ *  or whose session just became current, receive the resolved frame. */
 export function startPendingSync() {
 	let prev = new Map();
 	const refresh = async () => {
@@ -125,12 +115,18 @@ export function startPendingSync() {
 		if (list === null) return;
 		const waiting = asWaiting(list);
 		const current = new Map(waiting.map((s) => [s.callId, s]));
+		const open = currentSessionId(sessionsFace);
 		for (const [callId, survey] of prev) {
-			if (!current.has(callId)) feedResolved(sessionsFace, survey);
+			if (!current.has(callId) || survey.sessionId === open) feedResolved(sessionsFace, survey);
 		}
-		for (const [callId, survey] of current) feedRequested(sessionsFace, survey);
+		for (const [callId, survey] of current) {
+			// Never feed the session the user is looking at: the survey card is
+			// already in its conversation flow, and feeding there would mint a
+			// PendingWait the native QuestionComposer renders in the composer.
+			if (survey.sessionId === open) continue;
+			feedRequested(sessionsFace, survey);
+		}
 		prev = current;
-		publish(waiting);
 	};
 	refresh();
 	const timer = setInterval(refresh, POLL_MS);
@@ -138,50 +134,21 @@ export function startPendingSync() {
 		if (document.visibilityState === "visible") refresh();
 	};
 	document.addEventListener("visibilitychange", onVisible);
+	// Re-sync the instant the open session changes: the session that just came
+	// into view resolves its frame (card is in front of the user), and the one
+	// left behind re-lights.
+	let unsubscribe = null;
+	try {
+		const list = sessionsFace && sessionsFace.list;
+		if (list !== undefined && list !== null && typeof list.subscribe === "function") {
+			unsubscribe = list.subscribe(() => refresh());
+		}
+	} catch (error) {
+		unsubscribe = null;
+	}
 	return () => {
 		clearInterval(timer);
 		document.removeEventListener("visibilitychange", onVisible);
+		if (unsubscribe !== null) unsubscribe();
 	};
-}
-
-/** Read the current pending list, re-rendering when the poll updates it. */
-export function usePendingSurveys() {
-	return React.useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
-}
-
-/** Composer-chain takeover: claim the composer only for question frames WE fed
- *  (carrier marker present); everything else (native ask_user_question) passes
- *  through to the shipped QuestionComposer. */
-export function selectSurveyQuestion({ interactions }) {
-	const found = (interactions || []).find((i) =>
-		i && i.kind === "question" &&
-		Array.isArray(i.payload && i.payload.questions) &&
-		i.payload.questions.some((q) => q !== null && typeof q === "object" && q[SURVEY_MARKER] === true)
-	);
-	return found ?? null;
-}
-
-/** The composer hint shown while THIS session has a pending survey: a quiet
- *  amber line instead of a duplicate native question card. Clicking scrolls to
- *  the survey card in the conversation flow. */
-export function PendingComposerHint() {
-	const t = useText();
-	const scrollToCard = () => {
-		const card = document.querySelector(".mq-frame");
-		if (card !== null && card !== undefined && typeof card.scrollIntoView === "function") {
-			card.scrollIntoView({ behavior: "smooth", block: "center" });
-		}
-	};
-
-	return React.createElement("button", {
-		type: "button",
-		className: "mq-pending-composer",
-		"data-active": true,
-		"aria-label": t("pending.composer.hint"),
-		title: t("pending.composer.hint"),
-		onClick: scrollToCard
-	},
-		React.createElement("span", { className: "mq-pending-dot", "aria-hidden": true }),
-		React.createElement("span", { className: "mq-pending-composer-text" }, t("pending.composer"))
-	);
 }

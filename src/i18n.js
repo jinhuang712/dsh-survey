@@ -43,9 +43,7 @@ const TEXT = {
 		"settled.closed": "问卷已关闭",
 		"settled.closedShort": "已关闭",
 		"error.submit": "提交失败",
-		"error.close": "关闭失败",
-		"pending.composer": "本会话有问卷待答，点击查看问卷卡片",
-		"pending.composer.hint": "本会话有问卷在等你回答，点击滚动到问卷卡片"
+		"error.close": "关闭失败"
 	},
 	en: {
 		"eyebrow.survey": "Survey · {count} questions",
@@ -87,9 +85,7 @@ const TEXT = {
 		"settled.closed": "Survey closed",
 		"settled.closedShort": "Closed",
 		"error.submit": "Submit failed",
-		"error.close": "Close failed",
-		"pending.composer": "A survey in this session is waiting — click to view the card",
-		"pending.composer.hint": "A survey in this session is waiting; click to scroll to the survey card"
+		"error.close": "Close failed"
 	}
 };
 

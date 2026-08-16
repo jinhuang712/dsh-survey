@@ -12,7 +12,7 @@ import { RecapCard } from "./modes/recap.js";
 import { SurveyCard } from "./modes/survey.js";
 import { CompactCard } from "./modes/compact.js";
 import { GridCard } from "./modes/grid.js";
-import { PendingComposerHint, selectSurveyQuestion, setSessionsFace, startPendingSync } from "./pending.js";
+import { setSessionsFace, startPendingSync } from "./pending.js";
 
 bindRuntime(require);
 
@@ -63,17 +63,10 @@ export function apply(ctx) {
 		{ name: "tool.call.toolview", key: "do_a_survey" },
 		SurveyRoot
 	)));
-	// Composer takeover for surveys WE fed into the runtime: claim the chain
-	// seat before the native QuestionComposer (lower priority runs first) so a
-	// pending survey renders a quiet hint instead of a duplicate native card.
-	// Native ask_user_question frames carry no marker, so they still reach the
-	// shipped composer.
-	disposers.push(ctx.slots.inject("conversation.composer", () => ctx.slots.register(
-		{ name: "conversation.composer", select: selectSurveyQuestion, priority: -1 },
-		PendingComposerHint
-	)));
 	// Poll the host's pending list and feed native question frames: the sidebar
-	// shows the real amber "等待回答" dot on the owning session row.
+	// shows the real amber "等待回答" dot on the owning session row. Frames are
+	// fed only for sessions other than the one currently open — the composer
+	// and the open session's flow stay completely untouched.
 	if (typeof sessions !== "undefined" && sessions !== null && typeof sessions.handleMuxEnvelope === "function") {
 		disposers.push(startPendingSync());
 	}
