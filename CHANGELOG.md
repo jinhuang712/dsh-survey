@@ -2,6 +2,14 @@
 
 All notable changes to **dsh-survey** are documented here.
 
+## [1.1.2] - 2026-08-17
+
+### Changed
+- **待答提醒不再触碰 composer**：v1.1.1 会在打开待答问卷的 session 时，在输入区显示「本会话有问卷待答」提示条（为顶掉原生重复卡片而加的 composer 接管）。这个提示条挡在输入位置、又指向会话流里的卡片，属于多余打扰，已移除。
+  - 现在**只对当前未打开的 session** 喂 `question/requested` frame：sidebar 里那些 session 的行照常亮原生 amber「等待回答」dot；当前打开的 session 完全不喂（问卷卡片本来就在会话流里，用户看得见）
+  - 打开某个带 dot 的 session 的瞬间，其 frame 会被 `question/resolved` 清除——dot 熄灭时问卷卡片正好在眼前；切走后 dot 重新亮起
+  - composer chain 不再注册任何 entry，原生 `ask_user_question` 与输入区完全不受影响
+
 ## [1.1.1] - 2026-08-17
 
 ### Added
