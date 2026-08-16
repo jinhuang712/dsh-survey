@@ -59,12 +59,15 @@ Screenshots of the real toolview, captured from the shipped bundle.
 
 ## Install
 
+Pinned to a release — build artifacts are committed, so there is nothing to
+build and no registry involved:
+
 ```sh
-dsh plugin --profile web add dsh-survey
+dsh plugin --profile web add "github:jinhuang712/dsh-survey#v1.1.0"
 # restart dsh web, then refresh the page
 ```
 
-Straight from the repository instead, to run an unreleased commit:
+Or track `main` to pick up unreleased commits:
 
 ```sh
 dsh plugin --profile web add "github:jinhuang712/dsh-survey#main"
