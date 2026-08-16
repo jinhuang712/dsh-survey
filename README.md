@@ -59,21 +59,26 @@ Screenshots of the real toolview, captured from the shipped bundle.
 
 ## Install
 
-**Bundle plugin (recommended, resident)** — build artifacts are committed, one-line install:
+```sh
+dsh plugin --profile web add dsh-survey
+# restart dsh web, then refresh the page
+```
+
+Straight from the repository instead, to run an unreleased commit:
 
 ```sh
 dsh plugin --profile web add "github:jinhuang712/dsh-survey#main"
-# restart dsh web, then refresh the page
 ```
 
-Local directory install (when you have the source):
+Or from a local checkout, linked so edits show up on refresh:
 
 ```sh
 git clone https://github.com/jinhuang712/dsh-survey.git
-cd dsh-survey
-dsh plugin --profile web add .
-# restart dsh web, then refresh the page
+dsh plugin --profile web add "link:$PWD/dsh-survey"
 ```
+
+If your dsh profile directory is a pnpm workspace, pnpm asks for `-w` before
+touching its root — pass it through: `dsh plugin --profile web add -w …`.
 
 After install, the `do_a_survey` tool and its survey UI are available permanently.
 
