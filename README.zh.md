@@ -44,12 +44,14 @@
 
 ## 安装
 
+钉在某个 release 上装。构建产物已入库，装的时候不编译、也不经过任何 registry：
+
 ```sh
-dsh plugin --profile web add dsh-survey
+dsh plugin --profile web add "github:jinhuang712/dsh-survey#v1.1.0"
 # 重启 dsh web，刷新页面
 ```
 
-想跑未发布的提交，直接从仓库装：
+想跟未发布的提交，就跟 `main`：
 
 ```sh
 dsh plugin --profile web add "github:jinhuang712/dsh-survey#main"
