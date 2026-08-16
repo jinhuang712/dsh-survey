@@ -126,9 +126,21 @@ dsh plugin --profile web add "link:$PWD/dsh-survey"
 
 ## 验证
 
-- 安装后 `__DSH_BOOT__` 应含 `dsh-survey` client 行；`/plugins/dsh-survey/client.js` 200
-- `cordis_inspect_query`（Tool.listTools）应看到 `do_a_survey`
-- 发一轮 4-6 题实测（含 markdown + 颜色文本），验证四种 mode 呈现
+先确认装上了：
+
+- `__DSH_BOOT__` 含 `dsh-survey` client 行，`/plugins/dsh-survey/client.js` 返回 200
+- `cordis_inspect_query`（Tool.listTools）能看到 `do_a_survey`
+
+再发一轮覆盖四种 mode 的问卷，逐项对照卡片行为：
+
+| 看哪 | 应该是什么样 |
+|---|---|
+| 单选题 | 前置是编号座 `1` `2`，不是圆点——圆点只出现在是否题 |
+| `mode: "grid"` | 所有卡片同一尺寸，每张右上角都有跳过 `✕`，代码块被压成行内而不是把卡片撑高 |
+| 对比题 | 两侧都有底面；选中那侧浮起，描边更亮、序号反白 |
+| 带 `（推荐）` 的选项 | 渲染成徽章，label 里不再残留该标记——提交后的 recap 里同样不该出现 |
+| Markdown 与 `{color:…}` | 加粗、行内代码、围栏代码块正常渲染；带颜色的词与前后文字在同一行 |
+| 界面语言 | 跟随 Web UI 的语言设置，切换后卡片立即重新渲染 |
 
 ## 卸载
 
