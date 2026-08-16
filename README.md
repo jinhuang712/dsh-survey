@@ -25,6 +25,8 @@ All text supports Markdown (code blocks, blockquotes, inline code, bold) and col
 
 ## Preview
 
+Drawn from the shipped stylesheet, so they carry the real tokens and spacing. Each image follows your GitHub theme.
+
 **Grid matrix** — fullscreen overlay for many simple questions, one card each:
 
 <img src="assets/grid-mode.svg" alt="Grid matrix mode" width="720">
@@ -83,13 +85,23 @@ Example:
 {
   "mode": "inline",
   "questions": [
-    { "id": "q1", "question": "Your **OS**?", "options": [{ "label": "macOS" }, { "label": "Linux" }] },
-    { "id": "q2", "question": "Which question types?", "multi_select": true, "options": [{ "label": "Single" }, { "label": "Compare" }] },
-    { "id": "q3", "kind": "boolean", "question": "Auto-save progress?" },
-    { "id": "q4", "question": "Other feedback:" }
+    {
+      "id": "q1",
+      "header": "Runtime",
+      "question": "Which runtime does this ship on?",
+      "options": [
+        { "label": "Node 20 LTS (recommended)", "description": "Matches the CI base image." },
+        { "label": "Bun 1.1", "description": "Faster boot, fewer native addons." }
+      ]
+    },
+    { "id": "q2", "header": "Scope", "question": "Which surfaces need the rewrite?", "multi_select": true, "options": [{ "label": "Web client" }, { "label": "CLI" }] },
+    { "id": "q3", "kind": "boolean", "question": "Ship behind a flag first?" },
+    { "id": "q4", "header": "Notes", "question": "Anything the changelog should call out?" }
   ]
 }
 ```
+
+`header` is an optional short heading shown beside the question number. A trailing `(recommended)` on a label becomes a badge.
 
 ### Question types
 
@@ -113,6 +125,9 @@ Each answer is `{ id, selected, custom?, skipped? }`. Question ids must be uniqu
 - **Fullscreen overlay** — `mode: "overlay"` centers fullscreen (mask + 1180px), breaking past the 748px conversation column
 - **Grid matrix** — `mode: "grid"` fullscreen grid of many simple questions: equal-height cards, bottom-aligned toggles, per-card skip; compare questions degrade to left/right choice
 - **Readable recap** — strict two-column grid, one "question → answer" row each
+- **Follows your language** — card copy ships in English and Chinese, tracking the Web UI's language setting
+  - falls back to the browser's language where that setting is unavailable
+  - answers stay language-neutral, so switching never changes what the model receives
 - **Accessibility** — radio/checkbox semantics + keyboard focus rings
 
 ## Architecture

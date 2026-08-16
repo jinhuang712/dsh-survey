@@ -20,7 +20,11 @@ All notable changes to **dsh-survey** are documented here.
 - **问题 id 无约束**：缺失或重复的 id 会让 recap 的按 id 匹配全部命中第一条。现在空问卷、缺 id、重复 id 在 execute 阶段即失败并说明原因。
 
 ### Changed
-- **boolean 题回传值改为 `"yes"` / `"no"`**（原先是中文 `"是的"` / `"不是"`）：答案契约与界面语言解耦；UI 仍显示「是的 / 不是」，recap 也照原样回显。工具 description 与 output schema 现在写明了 boolean、compare、开放题各自的回传形状。
+- **界面文案跟随语言设置**：标题、题型标签、进度、按钮、占位符、recap 等用户可读文案不再硬编码中文，改为 zh / en 两套词条。
+  - 优先读 Web UI 自己的语言服务（`ctx.locale`），没有该服务时按浏览器语言兜底，用户切语言即时重渲染
+  - 答案契约不变：boolean 回传 `"yes"` / `"no"`，compare 回传 `"left"` / `"right"`，选项题回传 label 原文
+- **boolean 题回传值改为 `"yes"` / `"no"`**（原先是中文 `"是的"` / `"不是"`）：答案契约与界面语言解耦，UI 显示「是的 / 不是」或「Yes / No」，recap 照原样回显。工具 description 与 output schema 写明了各题型的回传形状。
+- **README 预览图重画**：四张 SVG 按真实 UI 的设计 token（`--dsw-*` 解析值）与 `.mq-*` 盒模型重绘，随读者的 GitHub 主题明暗切换，示例内容改为英文。
 - **全屏浮层补齐 modal 出口**：`overlay` 与 `grid` 支持 Esc 关闭、点遮罩关闭、Tab 在卡片内循环，打开时焦点移入卡片。
 - **动态插件兜底配方同步**：以上 host 与 client 修复全部同步；grid 模式补上此前缺失的 compare 题渲染，两版答案格式一致。
 
