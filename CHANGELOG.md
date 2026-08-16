@@ -2,7 +2,13 @@
 
 All notable changes to **dsh-survey** are documented here.
 
-## [1.0.3] - 2026-08-16
+## [1.1.0] - 2026-08-16
+
+### Added
+- **英文界面**：卡片文案不再硬编码中文，改为 zh / en 两套词条，插件从此可以给非中文用户用。
+  - 优先读 Web UI 自己的语言服务（`ctx.locale`），没有该服务时按浏览器语言兜底，用户切语言即时重渲染
+  - 答案契约不变：boolean 回传 `"yes"` / `"no"`，compare 回传 `"left"` / `"right"`，选项题回传 label 原文
+- **`AGENTS.md`**：面向模型的入口页——工具名、何时该用、参数形状、mode 怎么选、答案回传什么样。
 
 ### Fixed
 - **调用可能永久挂起**：`do_a_survey` 此前没有任何超时兜底，用户关标签页、刷新或不理会问卷时 Promise 永不 settle，agent loop 卡死、`pending` Map 泄漏。
@@ -20,9 +26,6 @@ All notable changes to **dsh-survey** are documented here.
 - **问题 id 无约束**：缺失或重复的 id 会让 recap 的按 id 匹配全部命中第一条。现在空问卷、缺 id、重复 id 在 execute 阶段即失败并说明原因。
 
 ### Changed
-- **界面文案跟随语言设置**：标题、题型标签、进度、按钮、占位符、recap 等用户可读文案不再硬编码中文，改为 zh / en 两套词条。
-  - 优先读 Web UI 自己的语言服务（`ctx.locale`），没有该服务时按浏览器语言兜底，用户切语言即时重渲染
-  - 答案契约不变：boolean 回传 `"yes"` / `"no"`，compare 回传 `"left"` / `"right"`，选项题回传 label 原文
 - **boolean 题回传值改为 `"yes"` / `"no"`**（原先是中文 `"是的"` / `"不是"`）：答案契约与界面语言解耦，UI 显示「是的 / 不是」或「Yes / No」，recap 照原样回显。工具 description 与 output schema 写明了各题型的回传形状。
 - **grid 卡片按 harness 组件风格重做**：此前卡片背景取 `--dsw-alias-bg-layer-1`，在深色下比卡片本体更暗，看着像卡片上挖的洞。
   - 改用其余 dsh 组件承载嵌套面的写法：`--dsw-alias-interactive-bg-hover` 打底 + `--dsw-alias-border-l2-darkmode-thin` 描边
