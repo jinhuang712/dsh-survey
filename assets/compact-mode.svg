@@ -1,36 +1,99 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="900" height="360" viewBox="0 0 900 360" font-family="system-ui, -apple-system, sans-serif">
-  <defs>
-    <linearGradient id="bg4" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#0d1117"/>
-      <stop offset="1" stop-color="#10151d"/>
-    </linearGradient>
-  </defs>
-  <rect width="900" height="360" fill="url(#bg4)"/>
-
-  <!-- conversation around -->
-  <text x="60" y="64" font-size="13" fill="#8b93a5">模型：</text>
-  <rect x="120" y="44" width="420" height="36" rx="18" fill="#1c2330"/>
-  <text x="146" y="67" font-size="13" fill="#e6e8ec">确认一下，就一个问题</text>
-
-  <!-- compact single-question card -->
-  <rect x="180" y="110" width="540" height="180" rx="16" fill="#161b24" stroke="#242c3a" stroke-width="1"/>
-
-  <!-- question row (number + text + type pill on one line) -->
-  <text x="212" y="148" font-size="13" fill="#8b93a5" font-weight="700">1.</text>
-  <text x="228" y="148" font-size="15" fill="#e6e8ec" font-weight="600">确认按此方案执行？</text>
-  <rect x="420" y="134" width="48" height="20" rx="10" fill="#1f2530" stroke="#2c3444"/>
-  <text x="432" y="148" font-size="10" font-weight="600" fill="#8b93a5">是否</text>
-
-  <!-- yes/no toggle -->
-  <rect x="212" y="172" width="110" height="32" rx="16" fill="#4f7cff"/>
-  <text x="238" y="193" font-size="13" font-weight="600" fill="#ffffff">是</text>
-  <rect x="320" y="172" width="110" height="32" rx="16" fill="#1f2530" stroke="#2c3444"/>
-  <text x="346" y="193" font-size="13" font-weight="600" fill="#8b93a5">否</text>
-
-  <!-- footer: single submit -->
-  <rect x="520" y="238" width="120" height="36" rx="10" fill="#4f7cff"/>
-  <text x="545" y="261" font-size="13" font-weight="700" fill="#ffffff">提交回答</text>
-
-  <!-- caption: compact = single question, richer types -->
-  <text x="212" y="268" font-size="11" fill="#5a6478">compact · 单题紧凑卡片</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="812" height="340" viewBox="0 0 812 340" role="img" aria-label="Compact single-question card: a yes/no question rendered as two radio rows with one submit button.">
+<title>dsh-survey — compact mode</title>
+<style>
+:root{
+  --base:#ffffff; --card:#ffffff; --cardline:#e6e6e6;
+  --l1:#f5f5f5; --l2:#e6e6e6; --l4:#d6d6d6;
+  --fg1:#0f1115; --fg2:#61666b; --fg3:#81858c; --fg4:#adb2b8;
+  --pillbg:#e4edfd; --pillfg:#4176e6;
+  --hover:#f2f3f4; --markbg:#e9ecf2;
+  --sel:#0f1115; --selfg:#ffffff;
+  --btn:#0f1115; --btnfg:#ffffff;
+  --field:#f5f6f7; --code:#ffffff;
+  --griditem:#ffffff; --gridline:#f5f5f5; --gridhover:#f2f3f4;
+  --scrim:#ffffff;
+}
+@media (prefers-color-scheme:dark){:root{
+  --base:#151517; --card:#2c2c2e; --cardline:#39393b;
+  --l1:#39393b; --l2:#454547; --l4:#565658;
+  --fg1:#f9fafb; --fg2:#cfd3d6; --fg3:#adb2b8; --fg4:#81858c;
+  --pillbg:#353638; --pillfg:#679efe;
+  --hover:#3d3d3f; --markbg:#61666b;
+  --sel:#f9fafb; --selfg:#0f1115;
+  --btn:#f9fafb; --btnfg:#0f1115;
+  --field:#353638; --code:#2c2c2e;
+  --griditem:#232324; --gridline:#303031; --gridhover:#353536;
+  --scrim:#151517;
+}}
+text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Helvetica Neue",Helvetica,Arial,sans-serif;
+  font-weight:400}
+.page{fill:var(--base)}
+.frame{fill:none;stroke:var(--l2);stroke-width:1}
+.card{fill:var(--card);stroke:var(--cardline);stroke-width:1}
+.rule{fill:var(--l1)}
+.item{fill:var(--griditem)}
+.itemline{fill:none;stroke:var(--gridline);stroke-width:1}
+.hoverbox{fill:var(--hover);stroke:var(--l2);stroke-width:1}
+.gridsel{fill:var(--gridhover);stroke:var(--l2);stroke-width:1}
+.markbg{fill:var(--markbg)}
+.field{fill:var(--field);stroke:var(--l2);stroke-width:1}
+.hairbox{fill:none;stroke:var(--l2);stroke-width:1}
+.codebg{fill:var(--code);stroke:var(--l1);stroke-width:1}
+.pill{fill:var(--pillbg)}
+.btn{fill:var(--btn)}
+.scrim{fill:var(--scrim);fill-opacity:.55}
+.ringoff{fill:none;stroke:var(--l4);stroke-width:1}
+.ringon{fill:var(--sel);stroke:none}
+.dot{fill:var(--selfg)}
+.check{fill:none;stroke:var(--selfg);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.icon{fill:none;stroke:var(--fg3);stroke-width:1.33;stroke-linecap:round}
+.iconm{fill:none;stroke:var(--fg2);stroke-width:1.1;stroke-linecap:round;stroke-linejoin:round}
+.quote{fill:var(--l2)}
+.eyebrow{font-size:11px;letter-spacing:.44px;fill:var(--fg3)}
+.title{font-size:16px;font-weight:500;fill:var(--fg1)}
+.qindex{font-size:13px;font-weight:700;letter-spacing:.26px;fill:var(--fg4)}
+.qhead{font-size:13px;font-weight:700;letter-spacing:.26px;fill:var(--fg2)}
+.qtext{font-size:14px;font-weight:500;letter-spacing:-.07px;fill:var(--fg1)}
+.opt{font-size:14px;font-weight:500;fill:var(--fg1)}
+.desc{font-size:14px;fill:var(--fg3)}
+.badge{font-size:11px;font-weight:600;fill:var(--pillfg)}
+.type{font-size:11px;font-weight:600;letter-spacing:.22px;fill:var(--pillfg)}
+.ph{font-size:14px;fill:var(--fg4)}
+.prog{font-size:14px;font-weight:500;fill:var(--fg2)}
+.progb{fill:var(--fg1)}
+.btnt{font-size:14px;fill:var(--btnfg)}
+.skip{font-size:14px;fill:var(--fg3)}
+.md{font-size:13px;fill:var(--fg3)}
+.mdq{font-size:13px;fill:var(--fg2)}
+.mono{font-size:12px;fill:var(--fg2);
+  font-family:"SF Mono","JetBrains Mono","Fira Code",Consolas,Menlo,monospace}
+.warn{fill:#e5534b}
+.gq{font-size:13px;font-weight:500;fill:var(--fg1)}
+.gopt{font-size:12px;font-weight:500;fill:var(--fg1)}
+.gside{font-size:11px;font-weight:600;fill:var(--fg2)}
+.gsideon{font-size:11px;font-weight:600;fill:var(--selfg)}
+.gskip{font-size:12px;fill:var(--fg3)}
+.cmp{font-size:14px;font-weight:500;fill:var(--fg1)}
+.num{font-size:11px;font-weight:500;fill:var(--fg2)}
+.chat{font-size:14px;fill:var(--fg2)}
+.chatu{font-size:14px;fill:var(--fg1)}
+</style>
+<rect x="0" y="0" width="812" height="340" rx="14" class="page"/>
+<defs><clipPath id="cp"><rect x="0" y="0" width="812" height="340" rx="14"/></clipPath><filter id="blur" x="-5%" y="-5%" width="110%" height="110%"><feGaussianBlur stdDeviation="2"/></filter></defs>
+<g clip-path="url(#cp)">
+<text x="32" y="42" class="chat">Ready to run the migration on staging?</text>
+<rect x="32.5" y="60.5" width="747" height="244" rx="20" class="card"/>
+<rect x="708.459" y="72" width="47.541" height="18" rx="6" class="pill"/>
+<text x="712.459" y="84.3" class="type">Yes/No</text>
+<text x="56" y="112.2" class="qtext">Run the migration on staging first?</text>
+<rect x="56.5" y="132.5" width="699" height="39" rx="12" class="hoverbox"/>
+<circle cx="74" cy="152" r="7" class="ringon"/>
+<circle cx="74" cy="152" r="3" class="dot"/>
+<text x="92" y="156.2" class="opt">Yes</text>
+<circle cx="74" cy="193" r="6.5" class="ringoff"/>
+<text x="92" y="197.2" class="opt">No</text>
+<rect x="642.687" y="243" width="123.313" height="36" rx="18" class="btn"/>
+<text x="704.344" y="265.97" class="btnt" text-anchor="middle">Submit answer</text>
+</g>
+<rect x="0.5" y="0.5" width="811" height="339" rx="13.5" class="frame"/>
 </svg>
