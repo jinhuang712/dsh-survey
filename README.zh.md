@@ -10,11 +10,31 @@
 
 | 单选 | 多选 | 是否 toggle | 对比题 | 开放题 |
 |---|---|---|---|---|
-| 圆形 radio | 方形 checkbox | 紧凑 is/否 开关 | 左右并排 Block | 多行输入框 |
+| 编号行 1 / 2 / 3 | 方形 checkbox | 两行单选点 | 左右并排 Block | 多行输入框 |
 
 </div>
 
 模型调用 `do_a_survey` 后，Web UI 按 `mode` 呈现问卷：单题紧凑卡 / 多题内嵌画幅 / 对比题全屏浮层 / 大量简单问题的网格矩阵。所有文本支持 Markdown（代码块、引用、行内代码、加粗）与颜色（`{color:red}文字{/color}`），提交后以对半两列 recap 展示回答。
+
+## 界面预览
+
+以下截图取自实际渲染的工具视图。卡片文案跟随 Web UI 的语言设置，这里是中文界面。
+
+**网格矩阵** — 大量简单问题的全屏浮层，一题一张卡：
+
+<img src="assets/grid-mode.zh.png" alt="网格矩阵模式" width="900">
+
+**内嵌** — 问卷嵌在对话画幅里，填完统一提交：
+
+<img src="assets/inline-mode.zh.png" alt="内嵌模式" width="720">
+
+**全屏对比** — 左右并排对比，正文支持 Markdown：
+
+<img src="assets/overlay-compare.zh.png" alt="全屏对比模式" width="900">
+
+**紧凑卡** — 单题卡片，题型完整：
+
+<img src="assets/compact-mode.zh.png" alt="紧凑模式" width="720">
 
 ## 安装
 
@@ -65,9 +85,9 @@ dsh plugin --profile web add .
 
 | 题型 | 触发 | UI | 答案回传 |
 |---|---|---|---|
-| 单选 | `options` + 无 `multi_select` | 圆形 radio | 选中选项的 label |
+| 单选 | `options` + 无 `multi_select` | 编号行（1 / 2 / 3） | 选中选项的 label |
 | 多选 | `options` + `multi_select: true` | 方形 checkbox | 全部选中项的 label，按选项顺序 |
-| 是否 | `kind: "boolean"` | 紧凑 toggle（不要传 options） | `"yes"` 或 `"no"` |
+| 是否 | `kind: "boolean"` | 两行单选点；grid 里是分段开关（不要传 options） | `"yes"` 或 `"no"` |
 | 对比 | `kind: "compare"` + `compare: {left: {title,text}, right: {title,text}}` | 左右并排 Block（建议 overlay） | `"left"` 或 `"right"` |
 | 开放 | 无 `options`、非 boolean/compare | 多行输入框 | 空 `selected`，正文在 `custom` |
 

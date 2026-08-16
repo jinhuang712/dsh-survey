@@ -1,6 +1,8 @@
 # dsh-survey
 
-Questionnaire-style batch questioning plugin for [DeepSeek Harness](https://github.com/deepseek-ai/DeepSeek-Harness) — the `do_a_survey` tool asks 10+ questions in one go (single / multi / yes-no toggle / compare / open), each skippable, fullscreen overlay, with a two-column recap after submit.
+Ask the user ten questions at once instead of ten times in a row.
+
+`do_a_survey` is a tool plugin for [DeepSeek Harness](https://github.com/deepseek-ai/DeepSeek-Harness). The model sends a whole questionnaire; the user answers it in one card and submits once.
 
 [![license](https://badgen.net/badge/license/MIT/green)](LICENSE)
 [![dsh-plugin](https://badgen.net/badge/topic/dsh-plugin/8257D0)](https://github.com/topics/dsh-plugin)
@@ -10,7 +12,7 @@ Questionnaire-style batch questioning plugin for [DeepSeek Harness](https://gith
 
 | Single | Multi | Yes/No | Compare | Open |
 |---|---|---|---|---|
-| Radio | Checkbox | Compact toggle | Side-by-side blocks | Multi-line input |
+| Numbered rows | Checkbox | Radio pair | Side-by-side blocks | Multi-line input |
 
 </div>
 
@@ -25,23 +27,23 @@ All text supports Markdown (code blocks, blockquotes, inline code, bold) and col
 
 ## Preview
 
-Drawn from the shipped stylesheet, so they carry the real tokens and spacing. Each image follows your GitHub theme.
+Screenshots of the real toolview, captured from the shipped bundle.
 
 **Grid matrix** — fullscreen overlay for many simple questions, one card each:
 
-<img src="assets/grid-mode.svg" alt="Grid matrix mode" width="720">
+<img src="assets/grid-mode.png" alt="Grid matrix mode" width="900">
 
 **Inline** — survey embedded in the conversation column, filled and submitted together:
 
-<img src="assets/inline-mode.svg" alt="Inline mode" width="720">
+<img src="assets/inline-mode.png" alt="Inline mode" width="720">
 
-**Overlay compare** — fullscreen side-by-side comparison with Markdown & color:
+**Overlay compare** — fullscreen side-by-side comparison with Markdown:
 
-<img src="assets/overlay-compare.svg" alt="Overlay compare mode" width="720">
+<img src="assets/overlay-compare.png" alt="Overlay compare mode" width="900">
 
 **Compact** — single-question card with rich question types:
 
-<img src="assets/compact-mode.svg" alt="Compact mode" width="720">
+<img src="assets/compact-mode.png" alt="Compact mode" width="720">
 
 ## Install
 
@@ -107,9 +109,9 @@ Example:
 
 | Type | Trigger | UI | Answer |
 |---|---|---|---|
-| Single | `options` + no `multi_select` | Radio | The chosen option's label |
+| Single | `options` + no `multi_select` | Numbered rows (1 / 2 / 3) | The chosen option's label |
 | Multi | `options` + `multi_select: true` | Checkbox | Every chosen label, in option order |
-| Yes/No | `kind: "boolean"` | Compact toggle (omit `options`) | `"yes"` or `"no"` |
+| Yes/No | `kind: "boolean"` | Radio pair; segmented toggle in grid (omit `options`) | `"yes"` or `"no"` |
 | Compare | `kind: "compare"` + `compare: {left: {title,text}, right: {title,text}}` | Side-by-side blocks (overlay recommended) | `"left"` or `"right"` |
 | Open | no `options`, not boolean/compare | Multi-line input | Empty `selected`, body in `custom` |
 
@@ -123,7 +125,10 @@ Each answer is `{ id, selected, custom?, skipped? }`. Question ids must be uniqu
 - **Color** — `{color:red}text{/color}` (named / `#hex` / `rgb()`), usable in questions, options, compare blocks
 - **Skip / restore** — per-question ✕ grays out, ↺ restores; submitted as `skipped: true`
 - **Fullscreen overlay** — `mode: "overlay"` centers fullscreen (mask + 1180px), breaking past the 748px conversation column
-- **Grid matrix** — `mode: "grid"` fullscreen grid of many simple questions: equal-height cards, bottom-aligned toggles, per-card skip; compare questions degrade to left/right choice
+- **Grid matrix** — `mode: "grid"` fullscreen grid of many simple questions
+  - every card is the same size, controls sit under the question, per-card skip
+  - card text is inline-only: a fenced block collapses to inline code and hard breaks to spaces, so one long question cannot blow open the whole matrix
+  - compare questions degrade to a left/right choice
 - **Readable recap** — strict two-column grid, one "question → answer" row each
 - **Follows your language** — card copy ships in English and Chinese, tracking the Web UI's language setting
   - falls back to the browser's language where that setting is unavailable
@@ -136,10 +141,24 @@ Each answer is `{ id, selected, custom?, skipped? }`. Question ids must be uniqu
   - `defineTool` registers `do_a_survey` with a 30-minute `timeoutMs`
   - `webServer.register` serves `/api/dsh-survey/submit|cancel`
   - `execute` suspends on the answer, correlated by `exec.callId`; submit, cancel, abort, timeout and unload each release it
-- **Client half** (`lib/client.js`): `__ModuleLoader__.load` bundle registering `tool.call.toolview` key=`do_a_survey`
-  - four modes: compact / inline / overlay / grid
-  - Markdown and color rendering, `fetch` submit
+- **Client half** (`src/` → `lib/client.js`): `__ModuleLoader__.load` bundle registering `tool.call.toolview` key=`do_a_survey`
+  - `runtime.js` binds the host's React and UI primitives from the loader's `require` — they are never bundled, so the plugin shares the host's React instance
+  - `styles.css` the stylesheet, injected once per page
+  - `i18n.js` zh/en copy, `markdown.js` Markdown and colour, `answers.js` pick ↔ answer mapping
+  - `controls.js` the answer controls, `model.js` draft state and submit/cancel
+  - `modes/` one file per presentation: `compact`, `survey` (inline + overlay), `grid`, `recap`
 - **Skill** (`skills/dsh-survey/SKILL.md`): usage guide + dynamic-plugin fallback recipe (`references/dynamic-plugin-fallback.md`)
+
+### Develop
+
+`lib/client.js` and its source map are build output, committed so the GitHub install stays one line. Edit `src/`, then:
+
+```sh
+pnpm install
+pnpm build      # esbuild src/index.js -> lib/client.js + lib/client.js.map
+```
+
+The host serves the map at `/plugins/dsh-survey/client.js.map`, so breakpoints land in `src/`.
 
 ## Verify
 
