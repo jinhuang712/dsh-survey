@@ -63,6 +63,7 @@ license: MIT
 - **提交后 recap**：严格对半两列 grid，逐行"题目 → 答案"
 - **全屏浮层的退出**：`overlay` 与 `grid` 是 modal，Esc、点遮罩、右上角 ✕ 三条路都能关；Tab 在卡片内循环
 - **无障碍**：radio/checkbox 语义 + 键盘 `:focus-visible` 焦点环
+- **工作区待答提醒（原生 session 行 dot）**：问卷发出后，左侧栏中该 session 的那一行会点亮与原生 `ask_user_question` 相同的 amber「等待回答」dot——client 半轮询 host 的 `/api/dsh-survey/pending`，向 `sessions.handleMuxEnvelope` 喂原生 `question/requested` frame，点亮该 session 行的原生 pending dot；提交/取消/超时后喂 `question/resolved` 熄灭。任何 session 干活都不会错过。打开该 session 时 composer 显示轻提示「本会话有问卷待答，点击查看问卷卡片」（点击滚动到卡片）
 - **超时**：30 分钟内无人提交，调用以超时失败并释放挂起，不会把会话卡住
 
 ## 使用示例

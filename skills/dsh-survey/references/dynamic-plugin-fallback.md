@@ -9,6 +9,8 @@ bundle 插件不可用（未安装、进程未重启、headless 环境）时，�
 - 动态版：`harness.handle` + `host.call`
 - bundle 版：webServer 路由 + `fetch`
 
+> **注意**：动态兜底版**不含** bundle 版的工作区待答提醒（原生 session 行 dot，靠 client 半轮询 `GET /api/dsh-survey/pending` 并向 `sessions.handleMuxEnvelope` 喂 `question/requested`/`question/resolved` frame）。该提醒依赖 bundle 的 webServer 路由与 client 对 session runtime 的访问方式，动态插件版未同步。若需要，在 client 半自行轮询并喂 frame，同时注册 composer chain 接管带标记的 frame。
+
 ## 重建步骤
 
 1. 调用 `cordis_define`：

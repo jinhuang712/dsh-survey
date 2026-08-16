@@ -2,6 +2,16 @@
 
 All notable changes to **dsh-survey** are documented here.
 
+## [1.1.1] - 2026-08-17
+
+### Added
+- **工作区待答提醒（原生 session 行 dot）**：`do_a_survey` 挂起的问卷现在会在左侧栏中**该 session 的那一行**点亮与原生 `ask_user_question` 完全相同的 amber「等待回答」dot——不是另起徽标，而是复用 DSH 原生机制：
+  - client 半轮询 host 的 `GET /api/dsh-survey/pending`，对每个待答问卷向 session runtime 的公开入口 `sessions.handleMuxEnvelope` 喂一条 `question/requested` frame，`SessionManager.trackPending` 点亮该 session 行的原生 pending dot；问卷提交、取消、超时、中止后喂 `question/resolved` 熄灭
+  - 由于 dot 是原生的，它天然跨 session 可见、跟随 session 列表排序、与 ask_user_question 视觉一致——在任何 session 干活都不会错过
+  - 取走 composer chain（priority -1）仅接管自己喂的 frame（带 `__dshSurvey` 标记），在**该 session 打开时**显示一条轻提示「本会话有问卷待答，点击查看问卷卡片」替代原生重复卡片；原生 ask_user_question 的 frame 无标记，仍由原生 QuestionComposer 接管，互不干扰
+  - host 新增 `GET /api/dsh-survey/pending`：返回仍在等待的问卷（callId、归属 sessionId、题数、发起时间）
+  - 轮询 5s 一次 + 页面重新可见时立即刷新；`trackPending`/`mint`/`resolvePending` 均幂等，重复轮询无副作用
+
 ## [1.1.0] - 2026-08-16
 
 ### Added

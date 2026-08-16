@@ -1,4 +1,5 @@
-/** Client half of dsh-survey: registers the `do_a_survey` toolview.
+/** Client half of dsh-survey: registers the `do_a_survey` toolview and the
+ *  native session-row reminder for pending surveys.
  *
  * The bundle is wrapped by build.mjs into the client module loader's
  * `factory(require)` shape, so `require` here is the loader's resolver — the
@@ -11,6 +12,7 @@ import { RecapCard } from "./modes/recap.js";
 import { SurveyCard } from "./modes/survey.js";
 import { CompactCard } from "./modes/compact.js";
 import { GridCard } from "./modes/grid.js";
+import { PendingComposerHint, selectSurveyQuestion, setSessionsFace, startPendingSync } from "./pending.js";
 
 bindRuntime(require);
 
@@ -46,10 +48,36 @@ export function apply(ctx) {
 			getSnapshot: () => locale.getSnapshot()
 		});
 	}
+	// The client session runtime (`SessionRuntime`) is served as ctx.sessions.
+	// Its public handleMuxEnvelope is the native entry the sidebar dot reads;
+	// capture it so the pending sync can feed frames that light the owning
+	// session row exactly like ask_user_question does.
+	const sessions = ctx.get("sessions");
+	if (sessions !== undefined && sessions !== null && typeof sessions.handleMuxEnvelope === "function") {
+		setSessionsFace(sessions);
+	}
 	const slots = ctx.get("slots");
 	if (slots === undefined) return;
-	return ctx.slots.inject("tool.call.toolview", () => ctx.slots.register(
+	const disposers = [];
+	disposers.push(ctx.slots.inject("tool.call.toolview", () => ctx.slots.register(
 		{ name: "tool.call.toolview", key: "do_a_survey" },
 		SurveyRoot
-	));
+	)));
+	// Composer takeover for surveys WE fed into the runtime: claim the chain
+	// seat before the native QuestionComposer (lower priority runs first) so a
+	// pending survey renders a quiet hint instead of a duplicate native card.
+	// Native ask_user_question frames carry no marker, so they still reach the
+	// shipped composer.
+	disposers.push(ctx.slots.inject("conversation.composer", () => ctx.slots.register(
+		{ name: "conversation.composer", select: selectSurveyQuestion, priority: -1 },
+		PendingComposerHint
+	)));
+	// Poll the host's pending list and feed native question frames: the sidebar
+	// shows the real amber "等待回答" dot on the owning session row.
+	if (typeof sessions !== "undefined" && sessions !== null && typeof sessions.handleMuxEnvelope === "function") {
+		disposers.push(startPendingSync());
+	}
+	return () => {
+		for (const dispose of disposers) dispose();
+	};
 }
