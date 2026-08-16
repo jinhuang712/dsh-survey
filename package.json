@@ -5,6 +5,10 @@
   "type": "module",
   "license": "MIT",
   "main": "lib/index.mjs",
+  "scripts": {
+    "build": "node build.mjs",
+    "prepack": "node build.mjs"
+  },
   "exports": {
     ".": {
       "default": "./lib/index.mjs"
@@ -39,5 +43,8 @@
     "deepseek-harness",
     "survey",
     "questionnaire"
-  ]
+  ],
+  "devDependencies": {
+    "esbuild": "^0.28.2"
+  }
 }
