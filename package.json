@@ -4,7 +4,22 @@
   "version": "1.0.3",
   "type": "module",
   "license": "MIT",
+  "homepage": "https://github.com/jinhuang712/dsh-survey#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jinhuang712/dsh-survey.git"
+  },
+  "bugs": {
+    "url": "https://github.com/jinhuang712/dsh-survey/issues"
+  },
   "main": "lib/index.mjs",
+  "files": [
+    "lib",
+    "src",
+    "skills",
+    "cordis.patch.yml",
+    "AGENTS.md"
+  ],
   "scripts": {
     "build": "node build.mjs",
     "prepack": "node build.mjs"
@@ -42,7 +57,14 @@
     "dsh-plugin",
     "deepseek-harness",
     "survey",
-    "questionnaire"
+    "questionnaire",
+    "ai-agent",
+    "llm-tools",
+    "human-in-the-loop",
+    "ask-user",
+    "batch-questions",
+    "agent-ui",
+    "tool-calling"
   ],
   "devDependencies": {
     "esbuild": "^0.28.2"
