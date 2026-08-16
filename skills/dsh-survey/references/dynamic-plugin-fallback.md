@@ -1,6 +1,13 @@
 # 动态插件兜底配方（dsh-survey v2）
 
-> 本文档是 `dsh-survey` 的**动态 Cordis 插件版**完整代码与重建步骤。当 bundle 插件不可用（未安装、进程未重启、或 headless 环境）时，用 `cordis_define` + `cordis_run` 现场重建 `do_a_survey` 工具。重建后工具名、题型、三档 mode、Markdown 渲染与 bundle 版完全一致（差异仅在内部通道：动态版用 `harness.handle`/`host.call`，bundle 版用 webServer 路由/`fetch`）。
+> 本文档是 `dsh-survey` 的**动态 Cordis 插件版**完整代码与重建步骤。
+
+bundle 插件不可用（未安装、进程未重启、headless 环境）时，用 `cordis_define` + `cordis_run` 现场重建 `do_a_survey`。
+
+重建后工具名、题型、四档 mode、Markdown 渲染、答案回传格式与 bundle 版一致，差异只在内部通道：
+
+- 动态版：`harness.handle` + `host.call`
+- bundle 版：webServer 路由 + `fetch`
 
 ## 重建步骤
 
@@ -17,47 +24,108 @@
 
 `do_a_survey(mode: "compact"|"inline"|"overlay"|"grid", questions: [...])`
 
-- `mode`（必选）呈现形态：`"compact"` 单题紧凑卡；`"inline"` 多题内嵌 748px；`"overlay"` 全屏浮层（对比题或需宽画布）；`"grid"` 全屏网格矩阵（大量简单问题）
-- 每题：`id`（必填）、`question`（必填，支持 Markdown）、`header?`（支持 Markdown）、`kind?`（`"boolean"`/`"compare"`）、`compare?`（`{left:{title,text}, right:{title,text}}`，支持 Markdown）、`options?`（`{label, description?}`，均支持 Markdown）、`multi_select?`
-- 无 options 且非 boolean/compare = 开放填空
+`mode`（必选）呈现形态：
+
+- `"compact"` 单题紧凑卡（多题时自动按 inline 呈现）
+- `"inline"` 多题内嵌 748px
+- `"overlay"` 全屏浮层，适合对比题或需宽画布
+- `"grid"` 全屏网格矩阵，适合大量简单问题
+
+每题字段：
+
+- `id`（必填）稳定 id，同一份问卷内必须唯一
+- `question`（必填）题目文本，支持 Markdown
+- `header?` 分组小标题，支持 Markdown
+- `kind?` `"boolean"` 或 `"compare"`
+- `compare?` `{left: {title, text}, right: {title, text}}`，支持 Markdown
+- `options?` `{label, description?}`，均支持 Markdown
+- `multi_select?` 多选开关；无 options 且非 boolean/compare 即开放填空
+
+答案回传：
+
+- 选项题 `selected` 是选中选项的 label 原文
+- boolean 题回传 `"yes"` / `"no"`
+- compare 题回传 `"left"` / `"right"`
+- 开放题答案在 `custom`，跳过的题为 `skipped: true`
+- 30 分钟无人作答的调用会超时失败
 
 ## 完整代码
 
 ### code.host
 
 ```js
+/** A survey waits on a human, so the budget is generous — but it is a budget: a
+ *  closed tab or an ignored card must not pin the agent loop forever. */
+const SURVEY_TIMEOUT_MS = 30 * 60 * 1000
+
+/** Reject a survey the UI cannot present or the model cannot read back: answers
+ *  are keyed by question id, so a missing or repeated id silently collapses two
+ *  questions into one. Returns the reason, or null when the survey is sound. */
+function describeInvalidSurvey(args) {
+  const questions = args === null || args === undefined ? undefined : args.questions
+  if (!Array.isArray(questions) || questions.length === 0) {
+    return 'do_a_survey needs a non-empty questions array'
+  }
+  const seen = new Set()
+  for (const question of questions) {
+    const id = question === null || question === undefined ? undefined : question.id
+    if (typeof id !== 'string' || id === '') return 'every question needs a non-empty string id'
+    if (seen.has(id)) return 'duplicate question id ' + JSON.stringify(id) + ' — ids must be unique within one survey'
+    seen.add(id)
+  }
+  return null
+}
+
+/** The client is the only expected writer, but whatever this returns lands
+ *  verbatim in the model's context, so the shape is enforced rather than
+ *  trusted. Returns null when the payload cannot be trusted. */
+function normalizeAnswers(input, ids) {
+  if (!Array.isArray(input)) return null
+  const answers = []
+  for (const item of input) {
+    if (item === null || typeof item !== 'object' || Array.isArray(item)) return null
+    if (typeof item.id !== 'string' || !ids.has(item.id)) return null
+    if (!Array.isArray(item.selected)) return null
+    if (item.selected.some((choice) => typeof choice !== 'string')) return null
+    const answer = { id: item.id, selected: item.selected }
+    if (typeof item.custom === 'string' && item.custom !== '') answer.custom = item.custom
+    if (item.skipped === true) answer.skipped = true
+    answers.push(answer)
+  }
+  return answers
+}
+
 return {
   name: 'dsh-survey',
   inject: ['tools'],
   apply(ctx) {
-    // pending calls: callId -> { resolve, reject }
+    // pending calls: callId -> { resolve, reject, ids }
     const pending = new Map()
 
     const disposeSubmit = harness.handle('dsvy/submit', async (args) => {
       const payload = args || {}
-      if (typeof payload.callId !== 'string' || !Array.isArray(payload.answers)) {
-        return { ok: false, error: 'bad payload' }
-      }
+      if (typeof payload.callId !== 'string') return { ok: false, error: 'bad payload' }
       const entry = pending.get(payload.callId)
       if (!entry) return { ok: false, error: 'no pending call' }
-      pending.delete(payload.callId)
-      entry.resolve({ answers: payload.answers })
+      const answers = normalizeAnswers(payload.answers, entry.ids)
+      if (answers === null) return { ok: false, error: 'bad answers payload' }
+      entry.resolve({ answers })
       return { ok: true }
     })
 
     const disposeCancel = harness.handle('dsvy/cancel', async (args) => {
       const payload = args || {}
-      if (typeof payload.callId !== 'string') return { ok: false }
+      if (typeof payload.callId !== 'string') return { ok: false, error: 'bad payload' }
       const entry = pending.get(payload.callId)
-      if (!entry) return { ok: false }
-      pending.delete(payload.callId)
+      if (!entry) return { ok: false, error: 'no pending call' }
       entry.reject(new Error('survey cancelled by the user'))
       return { ok: true }
     })
 
     const tool = harness.defineTool({
       name: 'do_a_survey',
-      description: '向用户发起问卷式提问（1 到任意数量问题，支持 10 个以上），收集确认、选择、偏好或意见。这是向用户提问的默认通道：任何需要提问、确认、收集选择或意见的场景（哪怕只有 1 个问题、哪怕是/否确认）都优先使用本工具，而不是正文提问或 ask_user_question——单题用 mode "compact"，多选/对比等复杂题型同屏一次问完。支持 Markdown 渲染：题目文本、选项 label/description、对比块正文都可以包含 markdown（**加粗**、`行内代码`、```代码块```、> 引用等）。每个问题需带稳定 id，id 会原样回显在答案中。题型：kind 为 "boolean" 时是紧凑的是/否 toggle（不要传 options）；kind 为 "compare" 时是左右并排对比题（传 compare: { left: {title, text}, right: {title, text} }）；有 options 时 multi_select 为 true 是多选、否则单选；无 options 且非 boolean/compare 时是开放填空。呈现模式由 mode 显式指定：单题用 "compact"（紧凑卡片）；多题无对比用 "inline"（内嵌对话流）；含对比题或需要更宽画布用 "overlay"（全屏浮层）；大量简单问题用 "grid"（全屏网格矩阵，一个问题一张卡片）。',
+      timeoutMs: SURVEY_TIMEOUT_MS,
+      description: '向用户发起问卷式提问（1 到任意数量问题，支持 10 个以上），收集确认、选择、偏好或意见。这是向用户提问的默认通道：任何需要提问、确认、收集选择或意见的场景（哪怕只有 1 个问题、哪怕是/否确认）都优先使用本工具，而不是正文提问或 ask_user_question——单题用 mode "compact"，多选/对比等复杂题型同屏一次问完。支持 Markdown 渲染：题目文本、选项 label/description、对比块正文都可以包含 markdown（**加粗**、`行内代码`、```代码块```、> 引用等）。每个问题需带稳定 id，id 会原样回显在答案中，同一份问卷内 id 必须唯一。答案回传约定：选项题的 selected 是被选中选项的 label 原文；boolean 题回传 "yes" 或 "no"；compare 题回传 "left" 或 "right"；开放题答案在 custom；跳过的题为 skipped: true。用户没有作答就超时的调用会失败，30 分钟为上限。题型：kind 为 "boolean" 时是紧凑的是/否 toggle（不要传 options）；kind 为 "compare" 时是左右并排对比题（传 compare: { left: {title, text}, right: {title, text} }）；有 options 时 multi_select 为 true 是多选、否则单选；无 options 且非 boolean/compare 时是开放填空。呈现模式由 mode 显式指定：单题用 "compact"（紧凑卡片）；多题无对比用 "inline"（内嵌对话流）；含对比题或需要更宽画布用 "overlay"（全屏浮层）；大量简单问题用 "grid"（全屏网格矩阵，一个问题一张卡片）。',
       parameters: {
         type: 'object',
         properties: {
@@ -131,9 +199,14 @@ return {
                 additionalProperties: false,
                 properties: {
                   id: { type: 'string', required: true },
-                  selected: { type: 'array', required: true, items: { type: 'string' } },
-                  custom: { type: 'string' },
-                  skipped: { type: 'boolean' }
+                  selected: {
+                    type: 'array',
+                    required: true,
+                    description: 'Option labels for option questions, "yes"/"no" for boolean, "left"/"right" for compare, empty for open or skipped.',
+                    items: { type: 'string' }
+                  },
+                  custom: { type: 'string', description: "Free-text answer: an open question's body, or the user's own wording." },
+                  skipped: { type: 'boolean', description: 'True when the user explicitly skipped this question.' }
                 }
               }
             }
@@ -142,21 +215,51 @@ return {
         render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }]
       },
       async execute(args, exec) {
+        const invalid = describeInvalidSurvey(args)
+        if (invalid !== null) throw new Error(invalid)
+
         const callId = exec.callId
+        const signal = exec.signal
+        const ids = new Set(args.questions.map((question) => question.id))
+
         return new Promise((resolve, reject) => {
-          const entry = { resolve, reject }
-          pending.set(callId, entry)
-          const onAbort = () => {
+          const entry = { resolve: null, reject: null, ids, timer: undefined }
+          let settled = false
+
+          // Every exit runs through here: the timer, the abort listener and the
+          // pending seat are released once, whichever side finishes first.
+          const finish = (settleFn, value) => {
+            if (settled) return
+            settled = true
+            if (entry.timer !== undefined) clearTimeout(entry.timer)
+            if (signal && typeof signal.removeEventListener === 'function') {
+              signal.removeEventListener('abort', onAbort)
+            }
             if (pending.get(callId) === entry) pending.delete(callId)
-            reject(new Error('do_a_survey aborted before the user answered'))
+            settleFn(value)
           }
-          if (exec.signal && typeof exec.signal.addEventListener === 'function') {
-            if (exec.signal.aborted) {
+
+          function onAbort() {
+            finish(reject, new Error('do_a_survey aborted before the user answered'))
+          }
+
+          entry.resolve = (value) => finish(resolve, value)
+          entry.reject = (error) => finish(reject, error)
+
+          if (signal && typeof signal.addEventListener === 'function') {
+            if (signal.aborted) {
               onAbort()
               return
             }
-            exec.signal.addEventListener('abort', onAbort)
+            signal.addEventListener('abort', onAbort)
           }
+
+          entry.timer = setTimeout(() => {
+            entry.reject(new Error('do_a_survey timed out after ' + SURVEY_TIMEOUT_MS + 'ms without an answer'))
+          }, SURVEY_TIMEOUT_MS)
+          if (typeof entry.timer.unref === 'function') entry.timer.unref()
+
+          pending.set(callId, entry)
         })
       }
     })
@@ -166,6 +269,11 @@ return {
       disposeTool()
       disposeSubmit()
       disposeCancel()
+      // Surveys still on screen lose their carrier the moment the handlers go,
+      // so fail them here rather than leaving the callers hanging.
+      for (const entry of [...pending.values()]) {
+        entry.reject(new Error('dsh-survey unloaded before the user answered'))
+      }
     }
   }
 }
@@ -283,7 +391,8 @@ return {
       if (rest.startsWith('**')) { prefix = '**'; rest = rest.slice(2) }
       let m = null
       if (/^[①-⑳❶-❿]/.test(rest)) m = /^[①-⑳❶-❿]\s*/.exec(rest)
-      else if (/^[0-9]{1,3}/.test(rest)) m = /^[0-9]{1,3}\s*(?:[.、．:：·)）])\s*/.exec(rest)
+      // The lookahead keeps a decimal label such as "3.5 Sonnet" intact.
+      else if (/^[0-9]{1,3}/.test(rest)) m = /^[0-9]{1,3}\s*(?:[.、．:：·)）])\s*(?![0-9])/.exec(rest)
       else if (/^[一二三四五六七八九十百]+/.test(rest)) m = /^[一二三四五六七八九十百]+\s*(?:[.、．:：·)）])\s*/.exec(rest)
       else if (/^[A-Za-z]/.test(rest)) m = /^[A-Za-z]\s*(?:[.、．:：·)）])\s*/.exec(rest)
       if (m === null) return label
@@ -298,15 +407,32 @@ return {
           ? null
           : React.createElement('span', { className: 'mq-mark mq-num' }, String(props.index))
 
+    // Yes/no answers travel as language-neutral values; the row labels stay
+    // Chinese so the card reads the way the rest of the UI does.
+    const BOOL_CHOICES = [{ value: 'yes', label: '是的' }, { value: 'no', label: '不是' }]
+
+    // Map one question's picked entries — option indices, or the boolean and
+    // compare literals — onto the answer values the model receives.
+    const pickedToSelected = (q, picked) => {
+      if (q.kind === 'boolean' || q.kind === 'compare') return picked.slice()
+      const options = Array.isArray(q.options) ? q.options : []
+      const labels = []
+      for (const index of picked) {
+        const opt = options[index]
+        if (opt !== undefined && opt !== null) labels.push(String(opt.label))
+      }
+      return labels
+    }
+
     const OptionRow = (props) => {
-      const on = props.selected.includes(props.label)
+      const on = props.on === true
       const display = parseRecommendedLabel(stripLeadingIndex(props.label))
       return React.createElement('button', {
         type: 'button',
         className: 'mq-opt',
         'data-on': on || undefined,
         disabled: props.disabled,
-        onClick: () => props.onChoose(props.label)
+        onClick: props.onChoose
       },
         React.createElement(Mark, { on, check: props.multi, radio: props.radio === true, index: props.index == null ? null : props.index + 1 }),
         React.createElement('span', { className: 'mq-opt-copy' },
@@ -329,15 +455,22 @@ return {
       const isOpen = !isBool && !isCompare && options.length === 0
       if (isBool) {
         return React.createElement('div', { className: 'mq-options' },
-          React.createElement(OptionRow, { radio: true, label: '是的', selected: d.selected, multi: false, disabled, onChoose: props.onBool }),
-          React.createElement(OptionRow, { radio: true, label: '不是', selected: d.selected, multi: false, disabled, onChoose: props.onBool })
+          BOOL_CHOICES.map((choice) => React.createElement(OptionRow, {
+            key: choice.value,
+            radio: true,
+            label: choice.label,
+            on: d.picked[0] === choice.value,
+            multi: false,
+            disabled,
+            onChoose: () => props.onBool(choice.value)
+          }))
         )
       }
       if (isCompare) {
         return React.createElement('div', { className: 'mq-compare' },
           ['left', 'right'].map((side) => {
             const item = (q.compare && q.compare[side]) || {}
-            const on = d.selected[0] === side
+            const on = d.picked[0] === side
             return React.createElement('button', {
               type: 'button', key: side,
               className: 'mq-compare-block', 'data-on': on || undefined,
@@ -368,10 +501,10 @@ return {
             index: oi,
             label: opt.label,
             description: opt.description,
-            selected: d.selected,
+            on: d.picked.includes(oi),
             multi: q.multi_select === true,
             disabled,
-            onChoose: (label) => props.onChoose(label)
+            onChoose: () => props.onChoose(oi)
           })),
           React.createElement('div', { className: 'mq-custom-row' + (d.custom.trim() !== '' ? ' mq-on' : '') },
             React.createElement('span', { className: 'mq-mark mq-num' }, '✎'),
@@ -386,40 +519,44 @@ return {
       )
     }
 
-    const useQuestionnaire = (block, questions, initialDrafts) => {
-      const [drafts, setDrafts] = React.useState(initialDrafts)
+    // Drafts hold picked option indices rather than labels, so two options
+    // sharing a label stay independently selectable; labels resolve at submit.
+    const useQuestionnaire = (block, questions) => {
+      const blankDrafts = () => questions.map(() => ({ picked: [], custom: '', skipped: false }))
+      const [drafts, setDrafts] = React.useState(blankDrafts)
       const [submitting, setSubmitting] = React.useState(false)
       const [submitted, setSubmitted] = React.useState(false)
       const [error, setError] = React.useState(null)
       const [closed, setClosed] = React.useState(false)
       React.useEffect(() => {
-        setDrafts(initialDrafts)
+        setDrafts(blankDrafts())
         setSubmitting(false)
         setSubmitted(false)
         setError(null)
+        setClosed(false)
       }, [block.callId])
-      const answeredCount = drafts.filter((d) => !d.skipped && (d.selected.length > 0 || d.custom.trim() !== '')).length
-      const choose = (index, label) => {
+      const answeredCount = drafts.filter((d) => !d.skipped && (d.picked.length > 0 || d.custom.trim() !== '')).length
+      const choose = (index, optionIndex) => {
         if (submitting || submitted) return
         setDrafts((current) => current.map((d, i) => {
           if (i !== index) return d
           const q = questions[index]
           if (q.multi_select === true) {
-            const selected = d.selected.includes(label)
-              ? d.selected.filter((item) => item !== label)
-              : [...d.selected, label]
-            return { ...d, selected, skipped: false }
+            const picked = d.picked.includes(optionIndex)
+              ? d.picked.filter((item) => item !== optionIndex)
+              : [...d.picked, optionIndex].sort((a, b) => a - b)
+            return { ...d, picked, skipped: false }
           }
-          return { ...d, selected: [label], skipped: false }
+          return { ...d, picked: [optionIndex], skipped: false }
         }))
       }
       const setBool = (index, value) => {
         if (submitting || submitted) return
-        setDrafts((current) => current.map((d, i) => i === index ? { ...d, selected: [value], skipped: false } : d))
+        setDrafts((current) => current.map((d, i) => i === index ? { ...d, picked: [value], skipped: false } : d))
       }
       const setCompare = (index, side) => {
         if (submitting || submitted) return
-        setDrafts((current) => current.map((d, i) => i === index ? { ...d, selected: [side], skipped: false } : d))
+        setDrafts((current) => current.map((d, i) => i === index ? { ...d, picked: [side], skipped: false } : d))
       }
       const setCustom = (index, value) => {
         if (submitting || submitted) return
@@ -427,7 +564,7 @@ return {
       }
       const toggleSkip = (index) => {
         if (submitting || submitted) return
-        setDrafts((current) => current.map((d, i) => i === index ? { ...d, skipped: !d.skipped, selected: [], custom: '' } : d))
+        setDrafts((current) => current.map((d, i) => i === index ? { ...d, skipped: !d.skipped, picked: [], custom: '' } : d))
       }
       const submit = async () => {
         if (submitting || submitted) return
@@ -435,12 +572,13 @@ return {
         setError(null)
         try {
           const answers = questions.map((q, i) => {
-            const d = drafts[i] || { selected: [], custom: '' }
+            const d = drafts[i] || { picked: [], custom: '', skipped: false }
             if (d.skipped) return { id: q.id, selected: [], skipped: true }
             const custom = (d.custom || '').trim()
+            const selected = pickedToSelected(q, d.picked)
             return {
               id: q.id,
-              selected: custom === '' || q.multi_select === true ? d.selected : [],
+              selected: custom === '' || q.multi_select === true ? selected : [],
               ...(custom === '' ? {} : { custom })
             }
           })
@@ -457,15 +595,81 @@ return {
         }
       }
       const cancel = async () => {
-        if (closed) return
+        if (closed || submitting || submitted) return
         setClosed(true)
+        setError(null)
         try {
-          await host.call('dsvy/cancel', { callId: block.callId })
+          const res = await host.call('dsvy/cancel', { callId: block.callId })
+          // The host owns the pending call; if it did not accept the cancel the
+          // survey is still live and the card must not claim otherwise.
+          if (!res || res.ok !== true) {
+            setClosed(false)
+            setError((res && res.error) || '关闭失败')
+          }
         } catch (cause) {
           setClosed(false)
+          setError(cause instanceof Error ? cause.message : String(cause))
         }
       }
       return { drafts, submitting, submitted, error, closed, answeredCount, choose, setBool, setCompare, setCustom, toggleSkip, submit, cancel }
+    }
+
+    // Fullscreen modes cover the page, so they carry a modal's expected exits:
+    // Escape, a click on the backdrop, and Tab cycling inside the card.
+    const useOverlayDismiss = (active, cardRef, onDismiss) => {
+      const dismiss = React.useRef(onDismiss)
+      dismiss.current = onDismiss
+      React.useEffect(() => {
+        if (!active) return undefined
+        const onKeyDown = (event) => {
+          if (event.key !== 'Escape') return
+          event.stopPropagation()
+          dismiss.current()
+        }
+        document.addEventListener('keydown', onKeyDown, true)
+        return () => document.removeEventListener('keydown', onKeyDown, true)
+      }, [active])
+      React.useEffect(() => {
+        if (!active) return
+        const node = cardRef.current
+        if (node && typeof node.focus === 'function') node.focus({ preventScroll: true })
+      }, [active])
+      const onCardKeyDown = (event) => {
+        if (!active || event.key !== 'Tab') return
+        const node = cardRef.current
+        if (!node) return
+        const focusable = node.querySelectorAll('button:not(:disabled), textarea:not(:disabled), input:not(:disabled), [tabindex]:not([tabindex="-1"])')
+        if (focusable.length === 0) return
+        const first = focusable[0]
+        const last = focusable[focusable.length - 1]
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault()
+          last.focus()
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault()
+          first.focus()
+        }
+      }
+      const onBackdropClick = (event) => {
+        if (!active || event.target !== event.currentTarget) return
+        dismiss.current()
+      }
+      return { onCardKeyDown, onBackdropClick }
+    }
+
+    // Turn one answer value back into what the user saw: the yes/no wording and
+    // the compare block's title, both of which travel as neutral literals.
+    const describeChoice = (q, value) => {
+      const text = String(value)
+      if (q.kind === 'boolean') {
+        const choice = BOOL_CHOICES.find((item) => item.value === text)
+        return choice === undefined ? text : choice.label
+      }
+      if (q.kind === 'compare' && q.compare) {
+        const side = q.compare[text]
+        if (side && side.title) return String(side.title)
+      }
+      return text
     }
 
     const RecapCard = ({ block }) => {
@@ -490,14 +694,13 @@ return {
         if (!a) return '未回答'
         if (a.skipped) return '已跳过'
         const custom = a.custom && String(a.custom).trim() !== '' ? String(a.custom).trim() : ''
-        if (custom) return custom
-        const picked = a.selected && a.selected.length > 0 ? a.selected[0] : ''
-        if (!picked) return '未回答'
-        if (q.kind === 'compare' && q.compare) {
-          const side = q.compare[picked]
-          return side && side.title ? String(side.title) : picked
-        }
-        return picked
+        const chosen = Array.isArray(a.selected) ? a.selected.map((value) => describeChoice(q, value)) : []
+        // A multi-select answer is every pick, and a free-text note sits beside
+        // the picks rather than replacing them.
+        if (chosen.length > 0 && custom !== '') return chosen.join('、') + '；' + custom
+        if (chosen.length > 0) return chosen.join('、')
+        if (custom !== '') return custom
+        return '未回答'
       }
       return React.createElement('div', { className: 'mq-frame' },
         React.createElement('div', { className: 'mq-card' },
@@ -519,14 +722,11 @@ return {
       )
     }
 
-    const SurveyCard = ({ block, mode }) => {
-      let questions = []
-      try {
-        const parsed = JSON.parse(block.argsRaw || '{}')
-        if (Array.isArray(parsed.questions)) questions = parsed.questions
-      } catch (error) { questions = [] }
+    const SurveyCard = ({ block, questions, mode }) => {
       const isWide = mode === 'overlay'
-      const model = useQuestionnaire(block, questions, () => questions.map(() => ({ selected: [], custom: '', skipped: false })))
+      const cardRef = React.useRef(null)
+      const model = useQuestionnaire(block, questions)
+      const overlay = useOverlayDismiss(isWide && !model.closed, cardRef, model.cancel)
       if (model.closed) {
         return React.createElement('div', { className: 'mq-frame' },
           React.createElement('div', { className: 'mq-card' },
@@ -534,8 +734,18 @@ return {
           )
         )
       }
-      return React.createElement('div', { className: 'mq-frame' + (isWide ? ' mq-wide' : '') },
-        React.createElement('section', { className: 'mq-card' },
+      return React.createElement('div', {
+        className: 'mq-frame' + (isWide ? ' mq-wide' : ''),
+        onClick: isWide ? overlay.onBackdropClick : undefined
+      },
+        React.createElement('section', {
+          className: 'mq-card',
+          ref: cardRef,
+          tabIndex: isWide ? -1 : undefined,
+          role: isWide ? 'dialog' : undefined,
+          'aria-modal': isWide ? true : undefined,
+          onKeyDown: isWide ? overlay.onCardKeyDown : undefined
+        },
           React.createElement('header', { className: 'mq-header' },
             React.createElement('div', { className: 'mq-heading' },
               React.createElement('div', { className: 'mq-eyebrow' }, '问卷 · 共 ' + questions.length + ' 题'),
@@ -549,7 +759,7 @@ return {
           ),
           React.createElement('div', { className: 'mq-body' },
             questions.map((q, index) => {
-              const d = model.drafts[index] || { selected: [], custom: '', skipped: false }
+              const d = model.drafts[index] || { picked: [], custom: '', skipped: false }
               const options = Array.isArray(q.options) ? q.options : []
               const isBool = q.kind === 'boolean'
               const isCompare = q.kind === 'compare'
@@ -606,15 +816,11 @@ return {
       )
     }
 
-    const CompactCard = ({ block }) => {
-      let questions = []
-      try {
-        const parsed = JSON.parse(block.argsRaw || '{}')
-        if (Array.isArray(parsed.questions)) questions = parsed.questions
-      } catch (error) { questions = [] }
+    // Reached only with exactly one question — SurveyRoot widens anything longer.
+    const CompactCard = ({ block, questions }) => {
       const q = questions[0] || { id: 'q', question: '' }
-      const model = useQuestionnaire(block, questions, () => [{ selected: [], custom: '', skipped: false }])
-      const d = model.drafts[0] || { selected: [], custom: '', skipped: false }
+      const model = useQuestionnaire(block, questions)
+      const d = model.drafts[0] || { picked: [], custom: '', skipped: false }
       if (model.closed) {
         return React.createElement('div', { className: 'mq-frame' },
           React.createElement('div', { className: 'mq-card' },
@@ -662,37 +868,47 @@ return {
       const disabled = props.disabled
       const options = Array.isArray(q.options) ? q.options : []
       const isBool = q.kind === 'boolean'
-      const isOpen = !isBool && options.length === 0
+      const isCompare = q.kind === 'compare'
+      const isOpen = !isBool && !isCompare && options.length === 0
       if (isBool) {
         return React.createElement('div', { className: 'mq-grid-bool' },
           React.createElement('span', { className: 'mq-grid-bool-switch', role: 'radiogroup', 'aria-label': String(q.question) },
-            React.createElement('button', {
-              type: 'button', role: 'radio',
-              'aria-checked': d.selected[0] === '是的' || undefined,
-              className: 'mq-grid-bool-side', 'data-on': d.selected[0] === '是的' || undefined,
+            BOOL_CHOICES.map((choice) => React.createElement('button', {
+              type: 'button', role: 'radio', key: choice.value,
+              'aria-checked': d.picked[0] === choice.value || undefined,
+              className: 'mq-grid-bool-side', 'data-on': d.picked[0] === choice.value || undefined,
               disabled,
-              onClick: () => props.onBool('是的')
-            }, '是的'),
-            React.createElement('button', {
-              type: 'button', role: 'radio',
-              'aria-checked': d.selected[0] === '不是' || undefined,
-              className: 'mq-grid-bool-side', 'data-on': d.selected[0] === '不是' || undefined,
-              disabled,
-              onClick: () => props.onBool('不是')
-            }, '不是')
+              onClick: () => props.onBool(choice.value)
+            }, choice.label))
           )
+        )
+      }
+      if (isCompare) {
+        return React.createElement('div', { className: 'mq-grid-options' },
+          ['left', 'right'].map((side) => {
+            const item = (q.compare && q.compare[side]) || {}
+            return React.createElement('button', {
+              type: 'button', key: side,
+              className: 'mq-grid-opt', 'data-on': d.picked[0] === side || undefined,
+              disabled,
+              onClick: () => props.onCompare(side)
+            },
+              React.createElement(Mark, { index: side === 'left' ? 1 : 2 }),
+              React.createElement('span', { className: 'mq-grid-opt-label' }, React.createElement(Md, { text: item.title ? item.title : (side === 'left' ? '方案 A' : '方案 B') }))
+            )
+          })
         )
       }
       return React.createElement(React.Fragment, null,
         !isOpen && React.createElement('div', { className: 'mq-grid-options' },
           options.map((opt, oi) => {
-            const on = d.selected.includes(opt.label)
+            const on = d.picked.includes(oi)
             const display = parseRecommendedLabel(stripLeadingIndex(opt.label))
             return React.createElement('button', {
               type: 'button', key: String(oi),
               className: 'mq-grid-opt', 'data-on': on || undefined,
               disabled,
-              onClick: () => props.onChoose(opt.label)
+              onClick: () => props.onChoose(oi)
             },
               React.createElement(Mark, { on, check: q.multi_select === true, index: oi + 1 }),
               React.createElement('span', { className: 'mq-grid-opt-label' },
@@ -713,13 +929,10 @@ return {
       )
     }
 
-    const GridCard = ({ block }) => {
-      let questions = []
-      try {
-        const parsed = JSON.parse(block.argsRaw || '{}')
-        if (Array.isArray(parsed.questions)) questions = parsed.questions
-      } catch (error) { questions = [] }
-      const model = useQuestionnaire(block, questions, () => questions.map(() => ({ selected: [], custom: '', skipped: false })))
+    const GridCard = ({ block, questions }) => {
+      const cardRef = React.useRef(null)
+      const model = useQuestionnaire(block, questions)
+      const overlay = useOverlayDismiss(!model.closed, cardRef, model.cancel)
       if (model.closed) {
         return React.createElement('div', { className: 'mq-frame' },
           React.createElement('div', { className: 'mq-card' },
@@ -727,8 +940,18 @@ return {
           )
         )
       }
-      return React.createElement('div', { className: 'mq-frame mq-wide' },
-        React.createElement('section', { className: 'mq-card' },
+      return React.createElement('div', {
+        className: 'mq-frame mq-wide',
+        onClick: overlay.onBackdropClick
+      },
+        React.createElement('section', {
+          className: 'mq-card',
+          ref: cardRef,
+          tabIndex: -1,
+          role: 'dialog',
+          'aria-modal': true,
+          onKeyDown: overlay.onCardKeyDown
+        },
           React.createElement('header', { className: 'mq-header' },
             React.createElement('div', { className: 'mq-heading' },
               React.createElement('div', { className: 'mq-eyebrow' }, '问卷矩阵 · 共 ' + questions.length + ' 题'),
@@ -742,7 +965,7 @@ return {
           ),
           React.createElement('div', { className: 'mq-grid-body' },
             questions.map((q, index) => {
-              const d = model.drafts[index] || { selected: [], custom: '', skipped: false }
+              const d = model.drafts[index] || { picked: [], custom: '', skipped: false }
               const bodyDisabled = model.submitting || model.submitted || d.skipped
               return React.createElement('div', { className: 'mq-grid-item' + (d.skipped ? ' mq-skipped' : ''), key: q.id || String(index) },
                 React.createElement('div', { className: 'mq-grid-qtext' },
@@ -758,8 +981,9 @@ return {
                 React.createElement(GridQuestionBody, {
                   q, d,
                   disabled: bodyDisabled,
-                  onChoose: (label) => model.choose(index, label),
+                  onChoose: (optionIndex) => model.choose(index, optionIndex),
                   onBool: (value) => model.setBool(index, value),
+                  onCompare: (side) => model.setCompare(index, side),
                   onCustom: (value) => model.setCustom(index, value)
                 })
               )
@@ -781,19 +1005,32 @@ return {
       )
     }
 
+    // Read the tool call once: every card below takes the questions as a prop.
+    const parseCall = (block) => {
+      try {
+        const parsed = JSON.parse(block.argsRaw || '{}')
+        return { mode: parsed.mode, questions: Array.isArray(parsed.questions) ? parsed.questions : [] }
+      } catch (error) {
+        return { mode: undefined, questions: [] }
+      }
+    }
+
     const SurveyRoot = (props) => {
       const block = props.block
       if (block.kind === 'tool-result') {
         return React.createElement(RecapCard, { block })
       }
+      const call = parseCall(block)
+      const questions = call.questions
       let mode = 'inline'
-      try {
-        const parsed = JSON.parse(block.argsRaw || '{}')
-        if (parsed.mode === 'compact' || parsed.mode === 'inline' || parsed.mode === 'overlay' || parsed.mode === 'grid') mode = parsed.mode
-      } catch (error) { mode = 'inline' }
-      if (mode === 'compact') return React.createElement(CompactCard, { block })
-      if (mode === 'grid') return React.createElement(GridCard, { block })
-      return React.createElement(SurveyCard, { block, mode })
+      if (call.mode === 'compact' || call.mode === 'inline' || call.mode === 'overlay' || call.mode === 'grid') mode = call.mode
+      // A compact card shows exactly one question. Rendering a longer survey
+      // through it would hide everything after the first while still submitting
+      // those questions as unanswered, so widen to inline instead.
+      if (mode === 'compact' && questions.length > 1) mode = 'inline'
+      if (mode === 'compact') return React.createElement(CompactCard, { block, questions })
+      if (mode === 'grid') return React.createElement(GridCard, { block, questions })
+      return React.createElement(SurveyCard, { block, questions, mode })
     }
 
     const disposeSlot = slots.inject('tool.call.toolview', () => slots.register(
@@ -813,6 +1050,7 @@ return {
 
 - 必须用 `cordis_define` + `cordis_run` 重建（动态插件机制）；含 Client 端代码，`cordis_run` 可能返回 `awaiting-approval`，需用户批准
 - 动态插件版内部通道：Host `harness.handle('dsvy/submit'|'dsvy/cancel')`，Client `host.call`；bundle 版则用 webServer 路由 + `fetch`——两者工具名、schema、UI 完全一致
-- Host 端 `execute` 用 `exec.callId` 挂起等待；`exec.signal` 中止时自动清理 pending
+- Host 端 `execute` 用 `exec.callId` 挂起等待，五条路径都会释放 pending 并摘掉 abort 监听：提交、取消、`exec.signal` 中止、30 分钟超时、插件卸载
+- 问卷提交的 answers 在 Host 端按 `{id, selected, custom?, skipped?}` 逐条校验，id 必须属于本次调用；形状不符返回 `bad answers payload`，调用继续挂起等待重发
 - 每次 `cordis_define` 追加不可变 Package；迭代用 `plugin.kind: "existing"` + 原 pluginId，`cordis_run`（mode: update）切换
 - 若重建后功能与预期不符，先查 `cordis_inspect_self(pluginId, packageId)` 诊断

@@ -14,7 +14,14 @@ Questionnaire-style batch questioning plugin for [DeepSeek Harness](https://gith
 
 </div>
 
-When the model calls `do_a_survey`, the Web UI renders the survey by `mode`: compact single-question card / inline embedded column / fullscreen overlay for compare / grid matrix for many simple questions. All text supports Markdown (code blocks, blockquotes, inline code, bold) and color (`{color:red}text{/color}`); a readable two-column recap is shown after submit.
+When the model calls `do_a_survey`, the Web UI renders the survey by `mode`:
+
+- `compact` — single-question card
+- `inline` — embedded in the conversation column
+- `overlay` — fullscreen, for compare questions
+- `grid` — matrix of many simple questions
+
+All text supports Markdown (code blocks, blockquotes, inline code, bold) and color (`{color:red}text{/color}`). A readable two-column recap follows the submit.
 
 ## Preview
 
@@ -52,7 +59,12 @@ dsh plugin --profile web add .
 # restart dsh web, then refresh the page
 ```
 
-After install, the `do_a_survey` tool and its survey UI are available permanently. The companion skill `dsh-survey` registers with the install (`dsh.skills` declaration): it documents usage and ships a dynamic-plugin fallback recipe (`references/dynamic-plugin-fallback.md`) for environments without the bundle.
+After install, the `do_a_survey` tool and its survey UI are available permanently.
+
+The companion skill `dsh-survey` registers with the install (`dsh.skills` declaration):
+
+- a usage guide covering the four modes and five question types
+- a dynamic-plugin fallback recipe (`references/dynamic-plugin-fallback.md`) for environments without the bundle
 
 ## Usage
 
@@ -81,17 +93,21 @@ Example:
 
 ### Question types
 
-| Type | Trigger | UI |
-|---|---|---|
-| Single | `options` + no `multi_select` | Radio |
-| Multi | `options` + `multi_select: true` | Checkbox |
-| Yes/No | `kind: "boolean"` | Compact toggle (omit `options`) |
-| Compare | `kind: "compare"` + `compare: {left: {title,text}, right: {title,text}}` | Side-by-side blocks (overlay recommended) |
-| Open | no `options`, not boolean/compare | Multi-line input |
+| Type | Trigger | UI | Answer |
+|---|---|---|---|
+| Single | `options` + no `multi_select` | Radio | The chosen option's label |
+| Multi | `options` + `multi_select: true` | Checkbox | Every chosen label, in option order |
+| Yes/No | `kind: "boolean"` | Compact toggle (omit `options`) | `"yes"` or `"no"` |
+| Compare | `kind: "compare"` + `compare: {left: {title,text}, right: {title,text}}` | Side-by-side blocks (overlay recommended) | `"left"` or `"right"` |
+| Open | no `options`, not boolean/compare | Multi-line input | Empty `selected`, body in `custom` |
+
+Each answer is `{ id, selected, custom?, skipped? }`. Question ids must be unique within one survey, and a survey nobody submits within 30 minutes fails on timeout rather than hanging the call.
 
 ### Features
 
-- **Full Markdown** — question text, option labels/descriptions, compare blocks, recap all render through the official safe renderer (micromark + protocol allowlist + shiki highlighting): code blocks, blockquotes, inline code, bold
+- **Full Markdown** — question text, option labels/descriptions, compare blocks and recap all render through the official safe renderer
+  - micromark + protocol allowlist + shiki highlighting
+  - code blocks, blockquotes, inline code, bold
 - **Color** — `{color:red}text{/color}` (named / `#hex` / `rgb()`), usable in questions, options, compare blocks
 - **Skip / restore** — per-question ✕ grays out, ↺ restores; submitted as `skipped: true`
 - **Fullscreen overlay** — `mode: "overlay"` centers fullscreen (mask + 1180px), breaking past the 748px conversation column
@@ -101,8 +117,13 @@ Example:
 
 ## Architecture
 
-- **Host half** (`lib/index.mjs`): Cordis entry — `defineTool` registers `do_a_survey`; `webServer.register` serves `/api/dsh-survey/submit|cancel`; `execute` suspends on the answer (`exec.callId` correlation, `exec.signal` abort cleanup)
-- **Client half** (`lib/client.js`): `__ModuleLoader__.load` bundle registering `tool.call.toolview` key=`do_a_survey`; four modes (compact/inline/overlay/grid) + Markdown & color rendering + `fetch` submit
+- **Host half** (`lib/index.mjs`): Cordis entry
+  - `defineTool` registers `do_a_survey` with a 30-minute `timeoutMs`
+  - `webServer.register` serves `/api/dsh-survey/submit|cancel`
+  - `execute` suspends on the answer, correlated by `exec.callId`; submit, cancel, abort, timeout and unload each release it
+- **Client half** (`lib/client.js`): `__ModuleLoader__.load` bundle registering `tool.call.toolview` key=`do_a_survey`
+  - four modes: compact / inline / overlay / grid
+  - Markdown and color rendering, `fetch` submit
 - **Skill** (`skills/dsh-survey/SKILL.md`): usage guide + dynamic-plugin fallback recipe (`references/dynamic-plugin-fallback.md`)
 
 ## Verify

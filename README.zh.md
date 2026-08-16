@@ -63,13 +63,15 @@ dsh plugin --profile web add .
 
 ### 题型
 
-| 题型 | 触发 | UI |
-|---|---|---|
-| 单选 | `options` + 无 `multi_select` | 圆形 radio |
-| 多选 | `options` + `multi_select: true` | 方形 checkbox |
-| 是否 | `kind: "boolean"` | 紧凑 toggle（不要传 options） |
-| 对比 | `kind: "compare"` + `compare: {left: {title,text}, right: {title,text}}` | 左右并排 Block（建议 overlay） |
-| 开放 | 无 `options`、非 boolean/compare | 多行输入框 |
+| 题型 | 触发 | UI | 答案回传 |
+|---|---|---|---|
+| 单选 | `options` + 无 `multi_select` | 圆形 radio | 选中选项的 label |
+| 多选 | `options` + `multi_select: true` | 方形 checkbox | 全部选中项的 label，按选项顺序 |
+| 是否 | `kind: "boolean"` | 紧凑 toggle（不要传 options） | `"yes"` 或 `"no"` |
+| 对比 | `kind: "compare"` + `compare: {left: {title,text}, right: {title,text}}` | 左右并排 Block（建议 overlay） | `"left"` 或 `"right"` |
+| 开放 | 无 `options`、非 boolean/compare | 多行输入框 | 空 `selected`，正文在 `custom` |
+
+答案对象为 `{ id, selected, custom?, skipped? }`。题目 id 在同一份问卷内必须唯一；30 分钟无人提交的问卷以超时失败，不会把调用挂死。
 
 ### 特性
 
@@ -83,7 +85,10 @@ dsh plugin --profile web add .
 
 ## 架构
 
-- **Host half**（`lib/index.mjs`）：Cordis entry，`defineTool` 注册 `do_a_survey`；`webServer.register` 提供 `/api/dsh-survey/submit|cancel`；`execute` 挂起等待（`exec.callId` 关联，`exec.signal` 中止清理）
+- **Host half**（`lib/index.mjs`）：Cordis entry
+  - `defineTool` 注册 `do_a_survey`，带 30 分钟 `timeoutMs`
+  - `webServer.register` 提供 `/api/dsh-survey/submit|cancel`
+  - `execute` 按 `exec.callId` 挂起等待；提交、取消、中止、超时、卸载五条路径都会释放
 - **Client half**（`lib/client.js`）：`__ModuleLoader__.load` bundle，注册 `tool.call.toolview` key=`do_a_survey`；四档模式（compact/inline/overlay/grid）+ Markdown 与颜色渲染 + `fetch` 提交
 - **Skill**（`skills/dsh-survey/SKILL.md`）：用法指南 + 动态插件兜底配方（`references/dynamic-plugin-fallback.md`）
 
