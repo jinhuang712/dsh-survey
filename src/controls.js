@@ -17,9 +17,34 @@ export function SettledCard({ textKey }) {
       React.createElement(
         "div",
         { className: "mq-settled" },
-        React.createElement("span", { className: "mq-settled-title" }, t(textKey)),
+        React.createElement("span", { className: "mq-settled-title mq-closed" }, t(textKey)),
       ),
     ),
+  );
+}
+
+/** "Answered n / total" with a thin meter, or the submit error when there is one. */
+export function Progress({ className, answered, total, error }) {
+  const t = useText();
+  return React.createElement(
+    "div",
+    { className },
+    error
+      ? React.createElement("span", { className: "mq-error" }, String(error))
+      : React.createElement(
+          "span",
+          null,
+          t("progress.prefix"),
+          React.createElement("b", null, String(answered)),
+          t("progress.suffix", { count: total }),
+          React.createElement(
+            "span",
+            { className: "mq-meter", "aria-hidden": true },
+            React.createElement("i", {
+              style: { width: Math.round((answered / Math.max(total, 1)) * 100) + "%" },
+            }),
+          ),
+        ),
   );
 }
 

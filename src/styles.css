@@ -583,6 +583,9 @@
   color: var(--dsw-alias-state-success-primary);
   font-weight: 600;
 }
+.mq-settled-title.mq-closed {
+  color: var(--dsw-alias-label-secondary);
+}
 .mq-recap {
   display: flex;
   flex-direction: column;
@@ -613,7 +616,7 @@
   color: var(--dsw-alias-label-primary);
   font-weight: 600;
   min-width: 0;
-  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 .mq-recap-empty {
   color: var(--dsw-alias-label-tertiary, var(--dsw-alias-label-secondary));
@@ -833,8 +836,9 @@
   align-items: center;
   gap: 12px;
   flex-shrink: 0;
-  margin-top: 18px;
-  padding: 12px 14px 14px 18px;
+  margin-top: 14px;
+  padding: 12px 16px 12px 24px;
+  border-top: 1px solid var(--dsw-alias-border-l1);
 }
 .mq-grid-progress {
   color: var(--dsw-alias-label-secondary);

@@ -1,11 +1,16 @@
 /** Settled view: the two-column recap rendered from the tool result. */
 import { describeChoice } from "../answers.js";
+import { SettledCard } from "../controls.js";
 import { useText } from "../i18n.js";
 import { Md } from "../markdown.js";
 import { React } from "../runtime.js";
 
 export function RecapCard({ block }) {
   const t = useText();
+  // A cancelled, timed-out or aborted call comes back as an error result with
+  // no answers; saying "answered" over a list of blanks would be wrong.
+  if (block.isError === true)
+    return React.createElement(SettledCard, { textKey: "settled.closed" });
   let questions = [];
   let answers = [];
   try {

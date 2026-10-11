@@ -1,6 +1,6 @@
 /** Grid matrix: fullscreen overlay, one card per question. */
 import { BOOL_CHOICES } from "../answers.js";
-import { Mark, SettledCard } from "../controls.js";
+import { Mark, Progress, SettledCard } from "../controls.js";
 import { BLANK_DRAFT, describeQuestion } from "../question.js";
 import { useText } from "../i18n.js";
 import { Md, parseRecommendedLabel, stripLeadingIndex, toInlineMarkdown } from "../markdown.js";
@@ -212,19 +212,12 @@ export function GridCard({ block, questions }) {
       React.createElement(
         "footer",
         { className: "mq-grid-footer" },
-        React.createElement(
-          "div",
-          { className: "mq-grid-progress" },
-          model.error
-            ? React.createElement("span", { className: "mq-error" }, String(model.error))
-            : React.createElement(
-                "span",
-                null,
-                t("progress.prefix"),
-                React.createElement("b", null, String(model.answeredCount)),
-                t("progress.suffix", { count: questions.length }),
-              ),
-        ),
+        React.createElement(Progress, {
+          className: "mq-grid-progress",
+          answered: model.answeredCount,
+          total: questions.length,
+          error: model.error,
+        }),
         React.createElement(
           Button,
           {

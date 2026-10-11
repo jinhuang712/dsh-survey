@@ -1,5 +1,5 @@
 /** Multi-question card: inline (748px) or fullscreen overlay (wide). */
-import { QuestionBody, SettledCard } from "../controls.js";
+import { Progress, QuestionBody, SettledCard } from "../controls.js";
 import { BLANK_DRAFT, describeQuestion } from "../question.js";
 import { useText } from "../i18n.js";
 import { Md } from "../markdown.js";
@@ -126,30 +126,12 @@ export function SurveyCard({ block, questions, mode }) {
       React.createElement(
         "footer",
         { className: "mq-footer" },
-        React.createElement(
-          "div",
-          { className: "mq-progress" },
-          model.error
-            ? React.createElement("span", { className: "mq-error" }, String(model.error))
-            : React.createElement(
-                "span",
-                null,
-                t("progress.prefix"),
-                React.createElement("b", null, String(model.answeredCount)),
-                t("progress.suffix", { count: questions.length }),
-                React.createElement(
-                  "span",
-                  { className: "mq-meter", "aria-hidden": true },
-                  React.createElement("i", {
-                    style: {
-                      width:
-                        Math.round((model.answeredCount / Math.max(questions.length, 1)) * 100) +
-                        "%",
-                    },
-                  }),
-                ),
-              ),
-        ),
+        React.createElement(Progress, {
+          className: "mq-progress",
+          answered: model.answeredCount,
+          total: questions.length,
+          error: model.error,
+        }),
         React.createElement(
           Button,
           {
