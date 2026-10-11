@@ -16,11 +16,13 @@ export let IconEditOutline16;
  * @param require - the module loader's resolver, passed into the factory.
  */
 export function bindRuntime(require) {
-	React = require("react");
-	const primitives = require("@deepseek-ai/dsh-client-ui-primitives");
-	MarkdownText = primitives.MarkdownText;
-	Button = primitives.Button;
-	IconCloseOutline16 = primitives.IconCloseOutline16;
-	IconCheckOutline14 = primitives.IconCheckOutline14;
-	IconEditOutline16 = primitives.IconEditOutline16;
+  React = require("react");
+  const primitives = require("@deepseek-ai/dsh-client-ui-primitives");
+  MarkdownText = primitives.MarkdownText;
+  Button = primitives.Button;
+  // Hosts from 0.1.7 name icons by weight and take `size` as a prop; older
+  // hosts export the pixel-sized names. Read the new name first.
+  IconCloseOutline16 = primitives.IconCloseOutlineRegular ?? primitives.IconCloseOutline16;
+  IconCheckOutline14 = primitives.IconCheckOutlineMedium ?? primitives.IconCheckOutline14;
+  IconEditOutline16 = primitives.IconEditOutlineRegular ?? primitives.IconEditOutline16;
 }

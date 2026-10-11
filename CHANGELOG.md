@@ -2,9 +2,23 @@
 
 All notable changes to **dsh-survey** are documented here.
 
+## [1.1.3] - 2026-10-12
+
+### Fixed
+
+- **DSH 0.1.7 及之后问卷卡片崩溃**：宿主在 0.1.7 把图标从按像素命名（`IconCloseOutline16`、`IconCheckOutline14`、`IconEditOutline16`）改成按粗细命名（`IconCloseOutlineRegular`、`IconCheckOutlineMedium`、`IconEditOutlineRegular`），尺寸改由 `size` 传入。旧名字解析成 `undefined`，卡片渲染时抛 React 错误 #130，问卷根本出不来。现在优先读新名字，旧宿主仍回退到旧名字。
+- **卡片在参数还没流完时挂载，点选和输入全部无效**：宿主会在工具调用的参数还在流式输出时就挂载卡片，此时题目可能不全。草稿数组只在挂载时按当时的题数建一次，之后不会补长，所以每次点选、填写都落空，进度一直是 0。现在每次更新都按当前题目重新对齐草稿。
+- **peer 范围不含 0.2.x**：`@deepseek-ai/dsh-tools` 的范围由 `^0.1.0-rc.6` 放宽为 `^0.1.0-rc.6 || ^0.2.0-rc.1`，宿主不再把插件标成「不兼容」。已在 DSH 0.2.1-alpha.2 上验证 inline、overlay（桌面版）与 grid、compact（Web 版）四种模式能显示、作答并提交。
+
+### Changed
+
+- **卡片视觉**：inline 与 compact 不再限制卡片高度，去掉卡片内的第二层滚动条；题目改为编号徽标加标题，题型改为安静的描边标签，选项改为带边框的卡片，选中时用宿主的强调色高亮；底栏加上分隔线和进度条；「跳过」由 ✕ 改为文字按钮。
+- **内部整理**：题型判断、草稿默认值、「已关闭」卡片各收为一处；仓库加入 oxfmt 与 oxlint 配置并统一格式（缩进由 tab 改为空格）。
+
 ## [1.1.2] - 2026-08-17
 
 ### Changed
+
 - **待答提醒不再触碰 composer**：v1.1.1 会在打开待答问卷的 session 时，在输入区显示「本会话有问卷待答」提示条（为顶掉原生重复卡片而加的 composer 接管）。这个提示条挡在输入位置、又指向会话流里的卡片，属于多余打扰，已移除。
   - 现在**只对当前未打开的 session** 喂 `question/requested` frame：sidebar 里那些 session 的行照常亮原生 amber「等待回答」dot；当前打开的 session 完全不喂（问卷卡片本来就在会话流里，用户看得见）
   - 打开某个带 dot 的 session 的瞬间，其 frame 会被 `question/resolved` 清除——dot 熄灭时问卷卡片正好在眼前；切走后 dot 重新亮起
@@ -13,6 +27,7 @@ All notable changes to **dsh-survey** are documented here.
 ## [1.1.1] - 2026-08-17
 
 ### Added
+
 - **工作区待答提醒（原生 session 行 dot）**：`do_a_survey` 挂起的问卷现在会在左侧栏中**该 session 的那一行**点亮与原生 `ask_user_question` 完全相同的 amber「等待回答」dot——不是另起徽标，而是复用 DSH 原生机制：
   - client 半轮询 host 的 `GET /api/dsh-survey/pending`，对每个待答问卷向 session runtime 的公开入口 `sessions.handleMuxEnvelope` 喂一条 `question/requested` frame，`SessionManager.trackPending` 点亮该 session 行的原生 pending dot；问卷提交、取消、超时、中止后喂 `question/resolved` 熄灭
   - 由于 dot 是原生的，它天然跨 session 可见、跟随 session 列表排序、与 ask_user_question 视觉一致——在任何 session 干活都不会错过
@@ -23,12 +38,14 @@ All notable changes to **dsh-survey** are documented here.
 ## [1.1.0] - 2026-08-16
 
 ### Added
+
 - **英文界面**：卡片文案不再硬编码中文，改为 zh / en 两套词条，插件从此可以给非中文用户用。
   - 优先读 Web UI 自己的语言服务（`ctx.locale`），没有该服务时按浏览器语言兜底，用户切语言即时重渲染
   - 答案契约不变：boolean 回传 `"yes"` / `"no"`，compare 回传 `"left"` / `"right"`，选项题回传 label 原文
 - **`AGENTS.md`**：面向模型的入口页——工具名、何时该用、参数形状、mode 怎么选、答案回传什么样。
 
 ### Fixed
+
 - **调用可能永久挂起**：`do_a_survey` 此前没有任何超时兜底，用户关标签页、刷新或不理会问卷时 Promise 永不 settle，agent loop 卡死、`pending` Map 泄漏。
   - harness 的 timeout-policy 是 per-tool opt-in，只对声明了 `timeoutMs` 的工具生效，本插件没声明
   - 现在声明 `timeoutMs: 30 分钟`，并在进程内挂同长度的兜底定时器（`unref`），覆盖未加载该策略的组合
@@ -44,6 +61,7 @@ All notable changes to **dsh-survey** are documented here.
 - **问题 id 无约束**：缺失或重复的 id 会让 recap 的按 id 匹配全部命中第一条。现在空问卷、缺 id、重复 id 在 execute 阶段即失败并说明原因。
 
 ### Changed
+
 - **boolean 题回传值改为 `"yes"` / `"no"`**（原先是中文 `"是的"` / `"不是"`）：答案契约与界面语言解耦，UI 显示「是的 / 不是」或「Yes / No」，recap 照原样回显。工具 description 与 output schema 写明了各题型的回传形状。
 - **grid 卡片按 harness 组件风格重做**：此前卡片背景取 `--dsw-alias-bg-layer-1`，在深色下比卡片本体更暗，看着像卡片上挖的洞。
   - 改用其余 dsh 组件承载嵌套面的写法：`--dsw-alias-interactive-bg-hover` 打底 + `--dsw-alias-border-l2-darkmode-thin` 描边
@@ -81,6 +99,7 @@ All notable changes to **dsh-survey** are documented here.
 ## [1.0.2] - 2026-08-15
 
 ### Changed
+
 - **`do_a_survey` 提升为默认提问通道**：工具 description、SKILL.md（含 frontmatter）与动态插件兜底配方同步改写。
   - 任何需要向用户提问、确认、收集选择或意见的场景都优先用 `do_a_survey`，哪怕只有 1 个问题、哪怕是/否确认
   - 单题用 `mode: "compact"`，不再走正文提问
@@ -89,6 +108,7 @@ All notable changes to **dsh-survey** are documented here.
 ## [1.0.1] - 2026-08-15
 
 ### Changed
+
 - **UI 全面对齐 ask_user_question（composer 卡片风格）**
   - 卡片：`--dsw-specific-input-major` 背景 + 20px 圆角 + `--dsw-shadow-lv2`
   - header：eyebrow/title 排版 + 圆形图标关闭按钮
@@ -100,6 +120,7 @@ All notable changes to **dsh-survey** are documented here.
   - `单选/多选/是否/对比/开放` 标签移到题号行右上角（跳过按钮旁），compact 单题卡同样右上角显示
 
 ### Fixed
+
 - **题号与题目正文不在一行**：长 MarkdownText 块会把作为独立 flex span 的题号挤到单独一行。
   - 题号改为 Markdown 段落首字渲染（`N. 题目…`），长题目换行时始终与正文首行同排
   - grid 模式同步修复
@@ -111,6 +132,7 @@ All notable changes to **dsh-survey** are documented here.
 ## [1.0.0] - 2026-08-14
 
 ### Added
+
 - **`do_a_survey` tool** — questionnaire-style batch questioning for DeepSeek Harness: ask 1 to 10+ questions at once, filled together and submitted in one go.
 - **Four presentation modes** (`mode` parameter, required):
   - `compact` — single-question card (like a rich ask_user_question)
@@ -129,8 +151,10 @@ All notable changes to **dsh-survey** are documented here.
 - **Skill** `dsh-survey` (usage guide) + **dynamic-plugin fallback recipe** for environments without the bundle.
 
 ### Fixed
+
 - Grid card layout: equal-height cards (`grid-auto-rows:1fr`), compact qtext (number hugs question, skip pinned right), bottom-aligned toggles, restored skip-button styling.
-- Markdown escaping across JSON transport: character-class regexes (`[*]{2}`, `` [`]{3} ``) immune to backslash mangling.
+- Markdown escaping across JSON transport: character-class regexes (`[*]{2}`, ``[`]{3}``) immune to backslash mangling.
 
 ## [0.1.0] - 2026-08-14
+
 - Initial release (internal history: rename `ask_many_questions` → `do_a_survey`, grid matrix mode, markdown hardening).
