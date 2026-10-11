@@ -10,8 +10,8 @@ Ask the user ten questions at once instead of ten times in a row.
 
 <div align="center">
 
-| Single | Multi | Yes/No | Compare | Open |
-|---|---|---|---|---|
+| Single        | Multi    | Yes/No     | Compare             | Open             |
+| ------------- | -------- | ---------- | ------------------- | ---------------- |
 | Numbered rows | Checkbox | Radio pair | Side-by-side blocks | Multi-line input |
 
 </div>
@@ -94,12 +94,12 @@ The companion skill `dsh-survey` registers with the install (`dsh.skills` declar
 
 Tell the model what you want to collect; it calls `do_a_survey(mode, questions)`. `mode` is required:
 
-| mode | When | Presentation |
-|---|---|---|
-| `"compact"` | Exactly 1 question | Compact single-question card |
-| `"inline"` | Multiple questions, no compare | Embedded in the conversation column |
-| `"overlay"` | Compare questions or wide canvas | Fullscreen overlay (1180px) |
-| `"grid"` | Many simple questions (yes/no, single) | Fullscreen grid matrix, one card each |
+| mode        | When                                   | Presentation                          |
+| ----------- | -------------------------------------- | ------------------------------------- |
+| `"compact"` | Exactly 1 question                     | Compact single-question card          |
+| `"inline"`  | Multiple questions, no compare         | Embedded in the conversation column   |
+| `"overlay"` | Compare questions or wide canvas       | Fullscreen overlay (1180px)           |
+| `"grid"`    | Many simple questions (yes/no, single) | Fullscreen grid matrix, one card each |
 
 Example:
 
@@ -116,7 +116,13 @@ Example:
         { "label": "Bun 1.1", "description": "Faster boot, fewer native addons." }
       ]
     },
-    { "id": "q2", "header": "Scope", "question": "Which surfaces need the rewrite?", "multi_select": true, "options": [{ "label": "Web client" }, { "label": "CLI" }] },
+    {
+      "id": "q2",
+      "header": "Scope",
+      "question": "Which surfaces need the rewrite?",
+      "multi_select": true,
+      "options": [{ "label": "Web client" }, { "label": "CLI" }]
+    },
     { "id": "q3", "kind": "boolean", "question": "Ship behind a flag first?" },
     { "id": "q4", "header": "Notes", "question": "Anything the changelog should call out?" }
   ]
@@ -127,13 +133,13 @@ Example:
 
 ### Question types
 
-| Type | Trigger | UI | Answer |
-|---|---|---|---|
-| Single | `options` + no `multi_select` | Numbered rows (1 / 2 / 3) | The chosen option's label |
-| Multi | `options` + `multi_select: true` | Checkbox | Every chosen label, in option order |
-| Yes/No | `kind: "boolean"` | Radio pair; segmented toggle in grid (omit `options`) | `"yes"` or `"no"` |
-| Compare | `kind: "compare"` + `compare: {left: {title,text}, right: {title,text}}` | Side-by-side blocks (overlay recommended) | `"left"` or `"right"` |
-| Open | no `options`, not boolean/compare | Multi-line input | Empty `selected`, body in `custom` |
+| Type    | Trigger                                                                  | UI                                                    | Answer                              |
+| ------- | ------------------------------------------------------------------------ | ----------------------------------------------------- | ----------------------------------- |
+| Single  | `options` + no `multi_select`                                            | Numbered rows (1 / 2 / 3)                             | The chosen option's label           |
+| Multi   | `options` + `multi_select: true`                                         | Checkbox                                              | Every chosen label, in option order |
+| Yes/No  | `kind: "boolean"`                                                        | Radio pair; segmented toggle in grid (omit `options`) | `"yes"` or `"no"`                   |
+| Compare | `kind: "compare"` + `compare: {left: {title,text}, right: {title,text}}` | Side-by-side blocks (overlay recommended)             | `"left"` or `"right"`               |
+| Open    | no `options`, not boolean/compare                                        | Multi-line input                                      | Empty `selected`, body in `custom`  |
 
 Each answer is `{ id, selected, custom?, skipped? }`. Question ids must be unique within one survey, and a survey nobody submits within 30 minutes fails on timeout rather than hanging the call.
 
@@ -190,14 +196,14 @@ It loaded at all:
 
 Then run a survey covering all four modes and check what the card does:
 
-| Look at | Expect |
-|---|---|
-| a single-choice question | numbered seats `1` `2`, not radio dots — dots appear only on yes/no |
-| `mode: "grid"` | every card the same size, skip `✕` in each corner, a fenced code block flattened to inline rather than inflating the card |
-| a compare question | both sides carry a panel; the chosen one lifts with a brighter border and an inverted number |
-| a `(recommended)` option | renders as a badge, and the marker is gone from the label — including in the recap after submit |
-| Markdown and `{color:…}` | bold, inline code and fenced blocks render; a coloured run stays on the same line as the text around it |
-| the interface language | follows the Web UI's language setting, and switching it re-renders the card immediately |
+| Look at                  | Expect                                                                                                                    |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------- |
+| a single-choice question | numbered seats `1` `2`, not radio dots — dots appear only on yes/no                                                       |
+| `mode: "grid"`           | every card the same size, skip `✕` in each corner, a fenced code block flattened to inline rather than inflating the card |
+| a compare question       | both sides carry a panel; the chosen one lifts with a brighter border and an inverted number                              |
+| a `(recommended)` option | renders as a badge, and the marker is gone from the label — including in the recap after submit                           |
+| Markdown and `{color:…}` | bold, inline code and fenced blocks render; a coloured run stays on the same line as the text around it                   |
+| the interface language   | follows the Web UI's language setting, and switching it re-renders the card immediately                                   |
 
 ## Uninstall
 

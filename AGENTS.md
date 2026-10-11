@@ -19,12 +19,12 @@ comes back as structured data rather than text you have to parse.
 
 `do_a_survey(mode, questions)`. `mode` is required.
 
-| mode | Use when | Renders as |
-|---|---|---|
-| `"compact"` | exactly 1 question | single-question card |
-| `"inline"` | several questions, no comparison | embedded in the conversation column |
-| `"overlay"` | a compare question, or long option text | fullscreen overlay, 1180px |
-| `"grid"` | many short questions | fullscreen matrix, one card each |
+| mode        | Use when                                | Renders as                          |
+| ----------- | --------------------------------------- | ----------------------------------- |
+| `"compact"` | exactly 1 question                      | single-question card                |
+| `"inline"`  | several questions, no comparison        | embedded in the conversation column |
+| `"overlay"` | a compare question, or long option text | fullscreen overlay, 1180px          |
+| `"grid"`    | many short questions                    | fullscreen matrix, one card each    |
 
 Passing more than one question with `"compact"` silently widens to `"inline"`,
 because a compact card renders only the first question and the rest would be
@@ -55,13 +55,13 @@ trailing `(recommended)` on a label becomes a badge.
 
 ## Question types and what comes back
 
-| Type | Trigger | Answer shape |
-|---|---|---|
-| Single | `options`, no `multi_select` | the chosen option's label |
-| Multi | `options` + `multi_select: true` | every chosen label, in option order |
-| Yes/No | `kind: "boolean"`, omit `options` | `"yes"` or `"no"` |
-| Compare | `kind: "compare"` + `compare: {left, right}` | `"left"` or `"right"` |
-| Open | no `options`, not boolean/compare | empty `selected`, text in `custom` |
+| Type    | Trigger                                      | Answer shape                        |
+| ------- | -------------------------------------------- | ----------------------------------- |
+| Single  | `options`, no `multi_select`                 | the chosen option's label           |
+| Multi   | `options` + `multi_select: true`             | every chosen label, in option order |
+| Yes/No  | `kind: "boolean"`, omit `options`            | `"yes"` or `"no"`                   |
+| Compare | `kind: "compare"` + `compare: {left, right}` | `"left"` or `"right"`               |
+| Open    | no `options`, not boolean/compare            | empty `selected`, text in `custom`  |
 
 Each answer is `{ id, selected, custom?, skipped? }`. Answer values are
 language-neutral: boolean and compare return the literals above regardless of

@@ -8,9 +8,9 @@
 
 <div align="center">
 
-| 单选 | 多选 | 是否 toggle | 对比题 | 开放题 |
-|---|---|---|---|---|
-| 编号行 1 / 2 / 3 | 方形 checkbox | 两行单选点 | 左右并排 Block | 多行输入框 |
+| 单选             | 多选          | 是否 toggle | 对比题         | 开放题     |
+| ---------------- | ------------- | ----------- | -------------- | ---------- |
+| 编号行 1 / 2 / 3 | 方形 checkbox | 两行单选点  | 左右并排 Block | 多行输入框 |
 
 </div>
 
@@ -72,12 +72,12 @@ dsh plugin --profile web add "link:$PWD/dsh-survey"
 
 告诉模型你想收集什么，模型会调用 `do_a_survey(mode, questions)`。`mode` 必选：
 
-| mode | 适用 | 呈现 |
-|---|---|---|
-| `"compact"` | 只有 1 个问题 | 紧凑单题卡片 |
-| `"inline"` | 多题、无对比题 | 内嵌对话流固定画幅 |
-| `"overlay"` | 含对比题、或需要更宽画布 | 全屏浮层（1180px） |
-| `"grid"` | 大量简单问题（是否/单选为主） | 全屏网格矩阵，一个问题一张卡片 |
+| mode        | 适用                          | 呈现                           |
+| ----------- | ----------------------------- | ------------------------------ |
+| `"compact"` | 只有 1 个问题                 | 紧凑单题卡片                   |
+| `"inline"`  | 多题、无对比题                | 内嵌对话流固定画幅             |
+| `"overlay"` | 含对比题、或需要更宽画布      | 全屏浮层（1180px）             |
+| `"grid"`    | 大量简单问题（是否/单选为主） | 全屏网格矩阵，一个问题一张卡片 |
 
 示例：
 
@@ -85,8 +85,17 @@ dsh plugin --profile web add "link:$PWD/dsh-survey"
 {
   "mode": "inline",
   "questions": [
-    { "id": "q1", "question": "你用的**操作系统**？", "options": [{ "label": "macOS" }, { "label": "Linux" }] },
-    { "id": "q2", "question": "希望支持哪些题型？", "multi_select": true, "options": [{ "label": "单选" }, { "label": "对比" }] },
+    {
+      "id": "q1",
+      "question": "你用的**操作系统**？",
+      "options": [{ "label": "macOS" }, { "label": "Linux" }]
+    },
+    {
+      "id": "q2",
+      "question": "希望支持哪些题型？",
+      "multi_select": true,
+      "options": [{ "label": "单选" }, { "label": "对比" }]
+    },
     { "id": "q3", "kind": "boolean", "question": "需要自动保存进度吗？" },
     { "id": "q4", "question": "其他建议：" }
   ]
@@ -95,13 +104,13 @@ dsh plugin --profile web add "link:$PWD/dsh-survey"
 
 ### 题型
 
-| 题型 | 触发 | UI | 答案回传 |
-|---|---|---|---|
-| 单选 | `options` + 无 `multi_select` | 编号行（1 / 2 / 3） | 选中选项的 label |
-| 多选 | `options` + `multi_select: true` | 方形 checkbox | 全部选中项的 label，按选项顺序 |
-| 是否 | `kind: "boolean"` | 两行单选点；grid 里是分段开关（不要传 options） | `"yes"` 或 `"no"` |
-| 对比 | `kind: "compare"` + `compare: {left: {title,text}, right: {title,text}}` | 左右并排 Block（建议 overlay） | `"left"` 或 `"right"` |
-| 开放 | 无 `options`、非 boolean/compare | 多行输入框 | 空 `selected`，正文在 `custom` |
+| 题型 | 触发                                                                     | UI                                              | 答案回传                       |
+| ---- | ------------------------------------------------------------------------ | ----------------------------------------------- | ------------------------------ |
+| 单选 | `options` + 无 `multi_select`                                            | 编号行（1 / 2 / 3）                             | 选中选项的 label               |
+| 多选 | `options` + `multi_select: true`                                         | 方形 checkbox                                   | 全部选中项的 label，按选项顺序 |
+| 是否 | `kind: "boolean"`                                                        | 两行单选点；grid 里是分段开关（不要传 options） | `"yes"` 或 `"no"`              |
+| 对比 | `kind: "compare"` + `compare: {left: {title,text}, right: {title,text}}` | 左右并排 Block（建议 overlay）                  | `"left"` 或 `"right"`          |
+| 开放 | 无 `options`、非 boolean/compare                                         | 多行输入框                                      | 空 `selected`，正文在 `custom` |
 
 答案对象为 `{ id, selected, custom?, skipped? }`。题目 id 在同一份问卷内必须唯一；30 分钟无人提交的问卷以超时失败，不会把调用挂死。
 
@@ -133,14 +142,14 @@ dsh plugin --profile web add "link:$PWD/dsh-survey"
 
 再发一轮覆盖四种 mode 的问卷，逐项对照卡片行为：
 
-| 看哪 | 应该是什么样 |
-|---|---|
-| 单选题 | 前置是编号座 `1` `2`，不是圆点——圆点只出现在是否题 |
-| `mode: "grid"` | 所有卡片同一尺寸，每张右上角都有跳过 `✕`，代码块被压成行内而不是把卡片撑高 |
-| 对比题 | 两侧都有底面；选中那侧浮起，描边更亮、序号反白 |
-| 带 `（推荐）` 的选项 | 渲染成徽章，label 里不再残留该标记——提交后的 recap 里同样不该出现 |
-| Markdown 与 `{color:…}` | 加粗、行内代码、围栏代码块正常渲染；带颜色的词与前后文字在同一行 |
-| 界面语言 | 跟随 Web UI 的语言设置，切换后卡片立即重新渲染 |
+| 看哪                    | 应该是什么样                                                               |
+| ----------------------- | -------------------------------------------------------------------------- |
+| 单选题                  | 前置是编号座 `1` `2`，不是圆点——圆点只出现在是否题                         |
+| `mode: "grid"`          | 所有卡片同一尺寸，每张右上角都有跳过 `✕`，代码块被压成行内而不是把卡片撑高 |
+| 对比题                  | 两侧都有底面；选中那侧浮起，描边更亮、序号反白                             |
+| 带 `（推荐）` 的选项    | 渲染成徽章，label 里不再残留该标记——提交后的 recap 里同样不该出现          |
+| Markdown 与 `{color:…}` | 加粗、行内代码、围栏代码块正常渲染；带颜色的词与前后文字在同一行           |
+| 界面语言                | 跟随 Web UI 的语言设置，切换后卡片立即重新渲染                             |
 
 ## 卸载
 

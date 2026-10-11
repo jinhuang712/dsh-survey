@@ -21,17 +21,17 @@ const FOOTER = `		return module.exports;
 });`;
 
 await build({
-	entryPoints: ["src/index.js"],
-	outfile: "lib/client.js",
-	bundle: true,
-	format: "cjs",
-	target: "es2022",
-	platform: "browser",
-	sourcemap: true,
-	sourcesContent: true,
-	loader: { ".css": "text" },
-	legalComments: "none",
-	banner: { js: BANNER },
-	footer: { js: FOOTER },
-	logLevel: "info"
+  entryPoints: ["src/index.js"],
+  outfile: "lib/client.js",
+  bundle: true,
+  format: "cjs",
+  target: "es2022",
+  platform: "browser",
+  sourcemap: true,
+  sourcesContent: true,
+  loader: { ".css": "text" },
+  legalComments: "none",
+  banner: { js: BANNER },
+  footer: { js: FOOTER },
+  logLevel: "info",
 });
