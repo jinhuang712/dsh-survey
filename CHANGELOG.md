@@ -2,6 +2,13 @@
 
 All notable changes to **dsh-survey** are documented here.
 
+## [1.1.4] - 2026-10-12
+
+### Changed
+
+- **npm 包名改为 `@jinhuang712/dsh-survey`**：npm 上未带 scope 的 `dsh-survey` 已被他人占用，本包无法发布到该名下。包名、`cordis.patch.yml` 的 `name` 与客户端加载 id 同步改名；工具名 `do_a_survey`、`/api/dsh-survey/*` 路由与 skill 名不变。已在 DSH 0.2.1-alpha.2 的 web profile 上验证改名后问卷能显示、提交。
+- **从旧名升级**：先从 profile 的 `dsh.profile.bundles` 与依赖里移除旧的 `dsh-survey`，再 `dsh plugin --profile web add @jinhuang712/dsh-survey`。
+
 ## [1.1.3] - 2026-10-12
 
 ### Fixed

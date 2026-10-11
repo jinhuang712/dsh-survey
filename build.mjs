@@ -10,7 +10,7 @@
 import { build } from "esbuild";
 
 const BANNER = `window.__ModuleLoader__.load({
-	id: "dsh-survey",
+	id: "@jinhuang712/dsh-survey",
 	factory: (require) => {
 		var module = { exports: {} };
 		var exports = module.exports;

@@ -1,6 +1,6 @@
 {
-  "name": "dsh-survey",
-  "version": "1.1.3",
+  "name": "@jinhuang712/dsh-survey",
+  "version": "1.1.4",
   "description": "Questionnaire-style survey plugin for DeepSeek Harness: the do_a_survey tool asks 1-10+ questions at once (single/multi/yes-no/compare/open types) in four presentation modes (compact/inline/overlay/grid), with per-question skip, full Markdown & color rendering, and a two-column recap after submit. Bundle form resident in the Web profile; companion skill ships a dynamic-plugin fallback recipe.",
   "keywords": [
     "agent-ui",

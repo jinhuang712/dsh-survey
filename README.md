@@ -59,11 +59,19 @@ Screenshots of the real toolview, captured from the shipped bundle.
 
 ## Install
 
-Pinned to a release — build artifacts are committed, so there is nothing to
-build and no registry involved:
+From npm (the scoped name; the unscoped `dsh-survey` on the registry is not
+this package):
 
 ```sh
-dsh plugin --profile web add "github:jinhuang712/dsh-survey#v1.1.0"
+dsh plugin --profile web add @jinhuang712/dsh-survey
+# restart dsh web, then refresh the page
+```
+
+Or pinned to a release — build artifacts are committed, so there is nothing to
+build:
+
+```sh
+dsh plugin --profile web add "github:jinhuang712/dsh-survey#v1.1.4"
 # restart dsh web, then refresh the page
 ```
 
